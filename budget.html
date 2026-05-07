@@ -142,7 +142,7 @@
 <div class="app">
   <aside class="sidebar">
     <div class="sidebar-logo">
-      <h1>정상어학원<br>남동탄</h1>
+      <h1>정상어학원<br>남동탄점</h1>
       <span>운영비 관리 시스템</span>
     </div>
     <nav class="sidebar-nav">
@@ -431,6 +431,7 @@ let currentYear, currentMonth;
 let expenses = [], incomes = [], categories = [];
 let currentFileBlob = null, currentFileType = null, currentFileName = null;
 let lastParsedItems = null;
+let lastParsedDiscount = null;
 
 function getParsedItems() { return lastParsedItems; }
 
@@ -604,19 +605,21 @@ function renderLedger() {
         <td rowspan="${items.length}" style="vertical-align:top;padding-top:10px;">${renderThumb(first)}</td>
         <td style="font-weight:500;">${first.item}</td>
         <td rowspan="${items.length}" style="color:var(--text2);font-size:12px;vertical-align:top;padding-top:13px;">${first.store||'—'}</td>
-        <td rowspan="${items.length}" style="vertical-align:top;padding-top:10px;"><span style="background:${getCatColor(first.category)}22;color:${getCatColor(first.category)};padding:2px 6px;border-radius:4px;font-size:11px;font-weight:600;">${first.category}</span></td>
-        <td style="font-weight:600;color:var(--red);white-space:nowrap;">${fmt(first.amount)}</td>
+        <td rowspan="${items.length}" style="vertical-align:top;padding-top:10px;" onclick="editCategory(event,'${first.group_id}',null,'${first.category}')">
+          <span style="background:${getCatColor(first.category)}22;color:${getCatColor(first.category)};padding:2px 6px;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;" title="클릭해서 수정">✎ ${first.category}</span>
+        </td>
+        <td style="font-weight:600;color:${Number(first.amount)<0?'var(--green)':'var(--red)'};white-space:nowrap;">${Number(first.amount)<0?'−'+fmt(Math.abs(first.amount)):fmt(first.amount)}</td>
         <td rowspan="${items.length}" style="vertical-align:top;padding-top:10px;"><button class="delete-btn" onclick="deleteGroup('${first.group_id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button></td>
       </tr>`;
       for (let i = 1; i < items.length; i++) {
         rows += `<tr>
-          <td style="font-weight:500;">${items[i].item}</td>
-          <td style="font-weight:600;color:var(--red);white-space:nowrap;">${fmt(items[i].amount)}</td>
+          <td style="font-weight:500;${items[i].item==='할인'?'color:var(--green);':''}">${items[i].item}</td>
+          <td style="font-weight:600;color:${Number(items[i].amount)<0?'var(--green)':'var(--red)'};white-space:nowrap;">${Number(items[i].amount)<0?'−'+fmt(Math.abs(items[i].amount)):fmt(items[i].amount)}</td>
         </tr>`;
       }
       if (items.length > 1) {
         rows += `<tr style="border-top:2px solid var(--border2);">
-          <td colspan="2" style="text-align:right;font-size:12px;color:var(--text3);font-weight:600;">소계</td>
+          <td colspan="2" style="text-align:right;font-size:12px;color:var(--text3);font-weight:600;">실결제</td>
           <td style="font-weight:700;color:var(--red);white-space:nowrap;">${fmt(groupTotal)}</td>
           <td colspan="4"></td>
         </tr>`;
@@ -630,7 +633,9 @@ function renderLedger() {
         <td>${renderThumb(e)}</td>
         <td style="font-weight:500;">${e.item}</td>
         <td style="color:var(--text2);font-size:12px;">${e.store||'—'}</td>
-        <td><span style="background:${getCatColor(e.category)}22;color:${getCatColor(e.category)};padding:2px 6px;border-radius:4px;font-size:11px;font-weight:600;">${e.category}</span></td>
+        <td onclick="editCategory(event,null,'${e.id}','${e.category}')">
+          <span style="background:${getCatColor(e.category)}22;color:${getCatColor(e.category)};padding:2px 6px;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;" title="클릭해서 수정">✎ ${e.category}</span>
+        </td>
         <td style="font-weight:600;color:var(--red);white-space:nowrap;">${fmt(e.amount)}</td>
         <td><button class="delete-btn" onclick="deleteExpense('${e.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button></td>
       </tr>`;
@@ -667,6 +672,37 @@ function renderThumb(e) {
   if (!e.file_url) return `<div style="width:36px;height:36px;border-radius:5px;border:1px dashed var(--border2);display:flex;align-items:center;justify-content:center;color:var(--border2);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="14" height="14"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>`;
   if (e.file_type === 'pdf') return `<div class="receipt-pdf" style="width:36px;height:36px;" onclick="window.open('${e.file_url}','_blank')"><svg viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2" width="16" height="16"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>`;
   return `<img class="receipt-thumb" style="width:36px;height:36px;" src="${e.file_url}" alt="영수증" onclick="document.getElementById('viewer-img').src='${e.file_url}';document.getElementById('img-viewer').style.display='flex'">`;
+}
+
+async function editCategory(event, groupId, expId, currentCat) {
+  const catNames = categories.map(c => c.name);
+  const select = document.createElement('select');
+  select.style.cssText = 'font-size:11px;padding:2px 4px;border:1px solid var(--accent);border-radius:4px;font-family:inherit;';
+  catNames.forEach(name => {
+    const opt = document.createElement('option');
+    opt.value = name; opt.textContent = name;
+    if (name === currentCat) opt.selected = true;
+    select.appendChild(opt);
+  });
+  const td = event.currentTarget;
+  td.innerHTML = '';
+  td.appendChild(select);
+  select.focus();
+  select.onchange = async () => {
+    const newCat = select.value;
+    try {
+      if (groupId) {
+        await api('PATCH', 'expenses', { category: newCat }, `?group_id=eq.${groupId}`);
+        expenses.forEach(e => { if (e.group_id === groupId) e.category = newCat; });
+      } else {
+        await api('PATCH', 'expenses', { category: newCat }, `?id=eq.${expId}`);
+        const exp = expenses.find(e => e.id === expId);
+        if (exp) exp.category = newCat;
+      }
+      renderLedger(); showToast('카테고리 수정됨');
+    } catch(e) { showToast('수정 실패: ' + e.message); renderLedger(); }
+  };
+  select.onblur = () => renderLedger();
 }
 
 async function deleteExpense(id) {
@@ -807,9 +843,9 @@ async function extractPdfText(file) {
 }
 
 function parsePdfText(text) {
-  const result = { items: [], total: null, date: null, store: null, category: '기타', summary: '' };
+  const result = { items: [], total: null, date: null, store: null, category: '기타', summary: '', discount: null };
 
-  // 날짜 추출 (2026 05 07 또는 2026-05-07 형태)
+  // 날짜 추출
   const dateMatch = text.match(/(\d{4})[.\s/-](\d{2})[.\s/-](\d{2})/);
   if (dateMatch) result.date = `${dateMatch[1]}-${dateMatch[2]}-${dateMatch[3]}`;
 
@@ -832,7 +868,14 @@ function parsePdfText(text) {
     if (m) { result.total = parseInt(m[1].replace(/,/g, '')); break; }
   }
 
-  // 품목 추출 — 날짜 뒤에 오는 품목명과 금액 패턴
+  // 할인금액 추출
+  const discountMatch = text.match(/할인\s*금액\s*[\s\S]*?(\d[\d,]+)/);
+  if (discountMatch) {
+    const discount = parseInt(discountMatch[1].replace(/,/g, ''));
+    if (discount > 0) result.discount = discount;
+  }
+
+  // 품목 추출
   const itemPattern = /\d{4}\s+\d{2}\s+\d{2}\s+(.+?)\s+\d+\s+([\d,]+)/g;
   let match;
   while ((match = itemPattern.exec(text)) !== null) {
@@ -841,13 +884,11 @@ function parsePdfText(text) {
     if (name && amount && amount < 10000000) result.items.push({ name, amount });
   }
 
-  // 요약
   if (result.items.length) result.summary = result.items.map(i => i.name).join(', ');
 
   // 카테고리 추정
   const foodKeywords = ['캔디', '과자', '음료', '식품', '커피', '간식', '롤리팝', '초콜릿'];
   const supplyKeywords = ['용지', '복사지', '볼펜', '테이프', '파일', '노트', '문구'];
-  const lower = text.toLowerCase();
   if (foodKeywords.some(k => text.includes(k))) result.category = '식비';
   else if (supplyKeywords.some(k => text.includes(k))) result.category = '소모품';
 
@@ -878,6 +919,7 @@ async function analyzeReceipt(file, isPdf) {
     if (parsed.summary) document.getElementById('exp-item').value = parsed.summary;
     if (parsed.store) document.getElementById('exp-store').value = parsed.store;
     lastParsedItems = parsed.items?.length ? parsed.items : null;
+    lastParsedDiscount = parsed.discount || null;
 
     document.getElementById('ai-result-area').innerHTML = `<div class="ai-result">
       <div class="ai-result-title">${isPdf ? '📄 PDF 분석 완료' : '✨ AI 분석 완료'} — 자동 입력됨</div>
@@ -891,7 +933,7 @@ async function analyzeReceipt(file, isPdf) {
 }
 
 function openExpenseModal() {
-  currentFileBlob=null; currentFileType=null; currentFileName=null; lastParsedItems=null;
+  currentFileBlob=null; currentFileType=null; currentFileName=null; lastParsedItems=null; lastParsedDiscount=null;
   document.getElementById('upload-area').innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="32" height="32" style="margin:0 auto 8px;display:block;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><p style="font-size:13px;">사진 또는 PDF 드래그 or 클릭</p><p style="font-size:11px;margin-top:4px;">JPG, PNG, PDF 지원</p>`;
   document.getElementById('ai-result-area').innerHTML='';
   ['exp-item','exp-amount','exp-memo','exp-store'].forEach(id=>document.getElementById(id).value='');
@@ -950,6 +992,17 @@ async function saveExpense() {
           amount: aiItems[i].amount,
           file_url: i === 0 ? file_url : null,
           file_type: i === 0 ? file_type : null,
+          group_id
+        });
+        savedItems.push(row);
+      }
+      // 할인 항목 추가
+      if (lastParsedDiscount && lastParsedDiscount > 0) {
+        const [row] = await api('POST', 'expenses', {
+          date, category, store: store || null, memo: '할인',
+          item: '할인',
+          amount: -lastParsedDiscount,
+          file_url: null, file_type: null,
           group_id
         });
         savedItems.push(row);
