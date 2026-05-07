@@ -718,34 +718,104 @@ function processFile(file) {
   analyzeReceipt(file, isPdf);
 }
 
-const PROMPT = `이 영수증을 분석해서 JSON만 반환해. 마크다운 없이 순수 JSON 객체만:
+const PROMPT = `이 영수증 이미지를 분석해서 JSON만 반환해. 마크다운 없이 순수 JSON 객체만:
 {"items":[{"name":"품목명","amount":숫자}],"total":숫자,"date":"YYYY-MM-DD","store":"구매처 상호명","category":"소모품|시설|교재|식비|교통|운영비|기타","summary":"품목 한줄요약"}
 날짜 모르면 null. store는 가게명/브랜드명. category는 학원 운영 맥락으로 판단.`;
 
+async function extractPdfText(file) {
+  const pdfjsLib = await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js');
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  let text = '';
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    text += content.items.map(item => item.str).join(' ') + '\n';
+  }
+  return text;
+}
+
+function parsePdfText(text) {
+  const result = { items: [], total: null, date: null, store: null, category: '기타', summary: '' };
+
+  // 날짜 추출 (2026 05 07 또는 2026-05-07 형태)
+  const dateMatch = text.match(/(\d{4})[.\s/-](\d{2})[.\s/-](\d{2})/);
+  if (dateMatch) result.date = `${dateMatch[1]}-${dateMatch[2]}-${dateMatch[3]}`;
+
+  // 구매처 추출
+  if (text.includes('쿠팡')) result.store = '쿠팡';
+  else if (text.includes('이마트')) result.store = '이마트';
+  else if (text.includes('네이버')) result.store = '네이버';
+  else if (text.includes('G마켓') || text.includes('지마켓')) result.store = 'G마켓';
+  else if (text.includes('11번가')) result.store = '11번가';
+
+  // 실제 결제금액 추출
+  const totalPatterns = [
+    /실제\s*총\s*결제\s*금액\s*[\s\S]*?(\d[\d,]+)/,
+    /합계금액\s*[\s\S]*?(\d[\d,]+)/,
+    /총\s*금액\s*[\s\S]*?(\d[\d,]+)/,
+    /결제금액\s*[\s\S]*?(\d[\d,]+)/,
+  ];
+  for (const pattern of totalPatterns) {
+    const m = text.match(pattern);
+    if (m) { result.total = parseInt(m[1].replace(/,/g, '')); break; }
+  }
+
+  // 품목 추출 — 날짜 뒤에 오는 품목명과 금액 패턴
+  const itemPattern = /\d{4}\s+\d{2}\s+\d{2}\s+(.+?)\s+\d+\s+([\d,]+)/g;
+  let match;
+  while ((match = itemPattern.exec(text)) !== null) {
+    const name = match[1].trim();
+    const amount = parseInt(match[2].replace(/,/g, ''));
+    if (name && amount && amount < 10000000) result.items.push({ name, amount });
+  }
+
+  // 요약
+  if (result.items.length) result.summary = result.items.map(i => i.name).join(', ');
+
+  // 카테고리 추정
+  const foodKeywords = ['캔디', '과자', '음료', '식품', '커피', '간식', '롤리팝', '초콜릿'];
+  const supplyKeywords = ['용지', '복사지', '볼펜', '테이프', '파일', '노트', '문구'];
+  const lower = text.toLowerCase();
+  if (foodKeywords.some(k => text.includes(k))) result.category = '식비';
+  else if (supplyKeywords.some(k => text.includes(k))) result.category = '소모품';
+
+  return result;
+}
+
 async function analyzeReceipt(file, isPdf) {
-  document.getElementById('ai-result-area').innerHTML=`<div class="ai-result"><div class="ai-loading"><div class="spinner"></div> AI가 영수증을 분석 중...</div></div>`;
+  document.getElementById('ai-result-area').innerHTML = `<div class="ai-result"><div class="ai-loading"><div class="spinner"></div> ${isPdf ? 'PDF 분석 중...' : 'AI가 영수증을 분석 중...'}</div></div>`;
   try {
-    const b64 = await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=ev=>res(ev.target.result.split(',')[1]); r.onerror=rej; r.readAsDataURL(file); });
-    const resp = await fetch('/api/analyze', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ image: b64, mimeType: file.type, prompt: PROMPT })
-    });
-    const data = await resp.json();
-    const parsed = JSON.parse(data.text.replace(/```json|```/g,'').trim());
-    if (parsed.date) document.getElementById('exp-date').value=parsed.date;
-    if (parsed.total) document.getElementById('exp-amount').value=parsed.total;
-    if (parsed.category && categories.find(c=>c.name===parsed.category)) document.getElementById('exp-cat').value=parsed.category;
-    if (parsed.summary) document.getElementById('exp-item').value=parsed.summary;
-    if (parsed.store) document.getElementById('exp-store').value=parsed.store;
-    document.getElementById('ai-result-area').innerHTML=`<div class="ai-result">
-      <div class="ai-result-title">✨ AI 분석 완료 — 자동 입력됨</div>
-      ${parsed.items?.map(it=>`<div class="ai-item"><span>${it.name}</span><span style="font-weight:600;">${fmt(it.amount)}</span></div>`).join('')||''}
-      <div class="ai-item" style="border-top:1px solid #dbeafe;margin-top:4px;padding-top:4px;font-weight:700;"><span>합계</span><span style="color:var(--accent);">${fmt(parsed.total||0)}</span></div>
-      ${parsed.store?`<div style="margin-top:6px;font-size:11px;color:var(--text2);">구매처: ${parsed.store}</div>`:''}
+    let parsed;
+    if (isPdf) {
+      const text = await extractPdfText(file);
+      parsed = parsePdfText(text);
+    } else {
+      const b64 = await new Promise((res, rej) => { const r = new FileReader(); r.onload = ev => res(ev.target.result.split(',')[1]); r.onerror = rej; r.readAsDataURL(file); });
+      const resp = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: b64, mimeType: file.type, prompt: PROMPT })
+      });
+      const data = await resp.json();
+      parsed = JSON.parse(data.text.replace(/```json|```/g, '').trim());
+    }
+
+    if (parsed.date) document.getElementById('exp-date').value = parsed.date;
+    if (parsed.total) document.getElementById('exp-amount').value = parsed.total;
+    if (parsed.category && categories.find(c => c.name === parsed.category)) document.getElementById('exp-cat').value = parsed.category;
+    if (parsed.summary) document.getElementById('exp-item').value = parsed.summary;
+    if (parsed.store) document.getElementById('exp-store').value = parsed.store;
+
+    document.getElementById('ai-result-area').innerHTML = `<div class="ai-result">
+      <div class="ai-result-title">${isPdf ? '📄 PDF 분석 완료' : '✨ AI 분석 완료'} — 자동 입력됨</div>
+      ${parsed.items?.map(it => `<div class="ai-item"><span>${it.name}</span><span style="font-weight:600;">${fmt(it.amount)}</span></div>`).join('') || ''}
+      <div class="ai-item" style="border-top:1px solid #dbeafe;margin-top:4px;padding-top:4px;font-weight:700;"><span>합계</span><span style="color:var(--accent);">${fmt(parsed.total || 0)}</span></div>
+      ${parsed.store ? `<div style="margin-top:6px;font-size:11px;color:var(--text2);">구매처: ${parsed.store}</div>` : ''}
     </div>`;
-  } catch(err) {
-    document.getElementById('ai-result-area').innerHTML=`<div class="ai-result" style="background:var(--red-bg);border-color:#fecaca;"><div style="color:var(--red);font-size:12px;">AI 분석 실패 — 직접 입력해주세요.</div></div>`;
+  } catch (err) {
+    document.getElementById('ai-result-area').innerHTML = `<div class="ai-result" style="background:var(--red-bg);border-color:#fecaca;"><div style="color:var(--red);font-size:12px;">분석 실패 — 직접 입력해주세요. (${err.message})</div></div>`;
   }
 }
 
