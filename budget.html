@@ -159,7 +159,7 @@
 <div class="app">
   <aside class="sidebar">
     <div class="sidebar-logo">
-      <h1>정상어학원<br>남동탄분원</h1>
+      <h1>정상어학원<br>한다슬</h1>
       <span>운영비 관리 시스템</span>
     </div>
     <nav class="sidebar-nav">
@@ -1209,6 +1209,8 @@ async function analyzeReceipt(file, isPdf) {
         body: JSON.stringify({ image: b64, mimeType: file.type, prompt: PROMPT })
       });
       const data = await resp.json();
+      if (data.error) throw new Error(data.error);
+      if (!data.text) throw new Error('응답이 비어있습니다.');
       parsed = JSON.parse(data.text.replace(/```json|```/g, '').trim());
     }
 
