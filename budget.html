@@ -159,7 +159,7 @@
 <div class="app">
   <aside class="sidebar">
     <div class="sidebar-logo">
-      <h1>정상어학원<br>남동탄점</h1>
+      <h1>정상어학원<br>남동탄분원</h1>
       <span>운영비 관리 시스템</span>
     </div>
     <nav class="sidebar-nav">
@@ -1159,7 +1159,7 @@ function parsePdfText(text) {
   else if (text.includes('G마켓') || text.includes('지마켓')) result.store = 'G마켓';
   else if (text.includes('11번가')) result.store = '11번가';
 
-  // 금액 추출 - "원" 근처의 모든 숫자 수집 후 합리적인 것 선택
+  // 금액 추출 - "원" 있는 경우 + 쿠팡처럼 "원" 없는 경우 모두 처리
   const allAmounts = [];
   const amRe = /([1-9][\d,]{1,8})\s*원/g;
   let am;
@@ -1167,12 +1167,26 @@ function parsePdfText(text) {
     const v = parseInt(am[1].replace(/,/g,''));
     if (v >= 100 && v <= 9999999) allAmounts.push(v);
   }
+
+  // "원" 없는 경우 - 실제 총 결제 금액 or 총 거래액 근처 숫자
+  if (!allAmounts.length) {
+    const patterns = [
+      /실제\s*총\s*결제\s*금액[\s\S]{0,10}?([1-9][\d,]{1,8})/,
+      /총\s*거래액\s*합계[\s\S]{0,10}?([1-9][\d,]{1,8})/,
+      /합계금액[\s\S]{0,10}?([1-9][\d,]{1,8})/,
+    ];
+    for (const pat of patterns) {
+      const m = text.match(pat);
+      if (m) { allAmounts.push(parseInt(m[1].replace(/,/g,''))); break; }
+    }
+  }
+
   if (allAmounts.length === 1) result.total = allAmounts[0];
   else if (allAmounts.length > 1) result.total = Math.max(...allAmounts);
 
   // 쿠팡 거래명세표 할인 계산
-  const grossM = text.match(/총\s*거래액\s*합계[\s\S]{0,20}?([1-9][\d,]{1,8})/);
-  const netM = text.match(/실제\s*총\s*결제\s*금액[\s\S]{0,20}?([1-9][\d,]{1,8})/);
+  const grossM = text.match(/총\s*거래액\s*합계[\s\S]{0,10}?([1-9][\d,]{1,8})/);
+  const netM = text.match(/실제\s*총\s*결제\s*금액[\s\S]{0,10}?([1-9][\d,]{1,8})/);
   if (grossM && netM) {
     const diff = parseInt(grossM[1].replace(/,/g,'')) - parseInt(netM[1].replace(/,/g,''));
     if (diff > 0) result.discount = diff;
