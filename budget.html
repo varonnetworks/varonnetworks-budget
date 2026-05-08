@@ -163,7 +163,7 @@
 <div class="app">
   <aside class="sidebar">
     <div class="sidebar-logo">
-      <h1>정상어학원<br>남동탄점</h1>
+      <h1>정상어학원<br>한다슬</h1>
       <span>운영비 관리 시스템</span>
     </div>
     <nav class="sidebar-nav">
@@ -704,13 +704,13 @@ function renderDashboard() {
   const mExp = expenses.filter(e => e.date?.startsWith(key));
   const mInc = incomes.filter(i => i.date?.startsWith(key));
   const totalInc = mInc.reduce((s,i) => s + Number(i.amount), 0);
-  const totalExp = mExp.reduce((s,e) => s + Number(e.amount), 0);
+  const totalExp = mExp.filter(e => e.item !== '할인').reduce((s,e) => s + Number(e.amount), 0);
   const balance = totalInc - totalExp;
   const withR = mExp.filter(e => e.file_url).length;
 
   // 누적 잔액 (전체 기간)
   const allIncome = incomes.reduce((s,i) => s + Number(i.amount), 0);
-  const allExpense = expenses.filter(e => Number(e.amount) > 0).reduce((s,e) => s + Number(e.amount), 0);
+  const allExpense = expenses.filter(e => e.item !== '할인').reduce((s,e) => s + Number(e.amount), 0);
   const allBalance = allIncome - allExpense;
   const totalBalEl = document.getElementById('m-total-balance');
   totalBalEl.textContent = fmt(allBalance);
@@ -844,7 +844,7 @@ function renderLedger() {
     }).join('');
   }
 
-  const totalExp = filteredExp.filter(e=>Number(e.amount)>0).reduce((s,e)=>s+Number(e.amount),0);
+  const totalExp = filteredExp.filter(e => e.item !== '할인').reduce((s,e)=>s+Number(e.amount),0);
   document.getElementById('ledger-exp-total').textContent = fmt(totalExp);
   document.getElementById('ledger-exp-count').textContent = filteredExp.length + '건';
 
