@@ -150,7 +150,11 @@
   .exp-card-amount:hover { opacity: 0.7; }
   .exp-card-footer { display: flex; justify-content: space-between; align-items: center; padding: 7px 12px; background: var(--surface2); border-top: 1px solid var(--border); font-size: 12px; }
   .exp-card-total { font-weight: 700; color: var(--red); }
-  .loading-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.9); z-index: 400; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; }
+  .item-row { display:flex;align-items:center;gap:8px;margin-bottom:6px; }
+  .item-row input[type=text] { flex:1; }
+  .item-row input[type=number] { width:110px;flex-shrink:0; }
+  .item-row-del { background:none;border:none;cursor:pointer;color:var(--text3);padding:4px;border-radius:5px;flex-shrink:0;display:flex; }
+  .item-row-del:hover { background:var(--red-bg);color:var(--red); }
   .loading-overlay .spinner { width: 28px; height: 28px; border-width: 3px; }
   @media (max-width: 900px) { .app { grid-template-columns: 1fr; } .sidebar { display: none; } .metric-grid { grid-template-columns: repeat(2,1fr); } .two-col { grid-template-columns: 1fr; } .form-row { grid-template-columns: 1fr; } }
 </style>
@@ -159,7 +163,7 @@
 <div class="app">
   <aside class="sidebar">
     <div class="sidebar-logo">
-      <h1>정상어학원<br>남동탄분원</h1>
+      <h1>정상어학원<br>남동탄점</h1>
       <span>운영비 관리 시스템</span>
     </div>
     <nav class="sidebar-nav">
@@ -431,18 +435,24 @@
         <div class="form-group" style="margin-bottom:0;"><label class="form-label">날짜</label><input type="date" class="form-input" id="exp-date"></div>
         <div class="form-group" style="margin-bottom:0;"><label class="form-label">카테고리</label><select class="form-input" id="exp-cat"></select></div>
       </div>
-      <div class="form-group" style="margin-top:14px;"><label class="form-label">품목명</label>
-        <input type="text" class="form-input" id="exp-item" placeholder="예: A4용지, 볼펜, 테이프 (쉼표로 구분하면 자동 분리)">
-        <div style="font-size:11px;color:var(--text3);margin-top:4px;">💡 쉼표로 구분하면 품목별로 따로 저장돼요</div>
-      </div>
-      <div class="form-group">
+      <div class="form-group" style="margin-top:14px;">
         <label class="form-label">구매처</label>
         <input type="text" class="form-input" id="exp-store" placeholder="예: 다이소, 쿠팡, 편의점...">
         <div class="store-suggestions" id="store-suggestions"></div>
       </div>
-      <div class="form-row">
-        <div class="form-group" style="margin-bottom:0;"><label class="form-label">금액</label><input type="number" class="form-input" id="exp-amount" placeholder="0"></div>
-        <div class="form-group" style="margin-bottom:0;"><label class="form-label">메모</label><input type="text" class="form-input" id="exp-memo" placeholder="선택사항"></div>
+      <div class="form-group">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <label class="form-label" style="margin-bottom:0;">품목 / 금액</label>
+          <button type="button" class="btn" style="padding:4px 10px;font-size:12px;" onclick="addItemRow()">+ 행 추가</button>
+        </div>
+        <div id="item-rows"></div>
+        <div style="display:flex;justify-content:flex-end;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">
+          <span style="font-size:12px;color:var(--text2);">합계: <strong id="item-total-display">₩0</strong></span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">메모</label>
+        <input type="text" class="form-input" id="exp-memo" placeholder="선택사항">
       </div>
     </div>
     <div class="modal-footer">
@@ -541,7 +551,33 @@ let currentFileBlob = null, currentFileType = null, currentFileName = null;
 let lastParsedItems = null;
 let lastParsedDiscount = null;
 
-function getParsedItems() { return lastParsedItems; }
+function addItemRow(name='', amount='') {
+  const rows = document.getElementById('item-rows');
+  const div = document.createElement('div');
+  div.className = 'item-row';
+  div.innerHTML = `
+    <input type="text" class="form-input item-name" placeholder="품목명" value="${name.replace(/"/g,'&quot;')}" oninput="updateItemTotal()">
+    <input type="number" class="form-input item-amount" placeholder="금액" value="${amount}" oninput="updateItemTotal()">
+    <button type="button" class="item-row-del" onclick="this.parentElement.remove();updateItemTotal()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>`;
+  rows.appendChild(div);
+  updateItemTotal();
+}
+
+function updateItemTotal() {
+  const amounts = [...document.querySelectorAll('.item-amount')].map(i => parseFloat(i.value)||0);
+  const total = amounts.reduce((s,v) => s+v, 0);
+  const el = document.getElementById('item-total-display');
+  if (el) el.textContent = '₩' + Math.round(total).toLocaleString('ko-KR');
+}
+
+function getItemRows() {
+  return [...document.querySelectorAll('.item-row')].map(row => ({
+    name: row.querySelector('.item-name').value.trim(),
+    amount: parseFloat(row.querySelector('.item-amount').value) || 0
+  })).filter(r => r.name);
+}
 
 async function api(method, table, body, params = '') {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}${params}`, {
@@ -1249,12 +1285,21 @@ async function analyzeReceipt(file, isPdf) {
     }
 
     if (parsed.date) document.getElementById('exp-date').value = parsed.date;
-    if (parsed.total) document.getElementById('exp-amount').value = parsed.total;
     if (parsed.category && categories.find(c => c.name === parsed.category)) document.getElementById('exp-cat').value = parsed.category;
-    if (parsed.summary) document.getElementById('exp-item').value = parsed.summary;
     if (parsed.store) document.getElementById('exp-store').value = parsed.store;
     lastParsedItems = parsed.items?.length ? parsed.items : null;
     lastParsedDiscount = parsed.discount || null;
+
+    // 품목 행 채우기
+    document.getElementById('item-rows').innerHTML = '';
+    if (parsed.items?.length) {
+      parsed.items.forEach(it => addItemRow(it.name, it.amount));
+      if (lastParsedDiscount) addItemRow('할인', -lastParsedDiscount);
+    } else if (parsed.summary && parsed.total) {
+      addItemRow(parsed.summary, parsed.total);
+    } else {
+      addItemRow('', parsed.total || '');
+    }
 
     document.getElementById('ai-result-area').innerHTML = `<div class="ai-result">
       <div class="ai-result-title">${isPdf ? '📄 PDF 분석 완료' : '✨ AI 분석 완료'} — 자동 입력됨</div>
@@ -1269,6 +1314,8 @@ async function analyzeReceipt(file, isPdf) {
 
 function openExpenseModal() {
   currentFileBlob=null; currentFileType=null; currentFileName=null; lastParsedItems=null; lastParsedDiscount=null;
+  document.getElementById('item-rows').innerHTML = '';
+  addItemRow();
   document.getElementById('upload-area').innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="32" height="32" style="margin:0 auto 8px;display:block;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><p style="font-size:13px;">사진 또는 PDF 드래그 or 클릭</p><p style="font-size:11px;margin-top:4px;">JPG, PNG, PDF 지원</p>`;
   document.getElementById('ai-result-area').innerHTML='';
   ['exp-item','exp-amount','exp-memo','exp-store'].forEach(id=>document.getElementById(id).value='');
@@ -1297,10 +1344,10 @@ async function saveExpense() {
   const category = document.getElementById('exp-cat').value;
   const store = document.getElementById('exp-store').value.trim();
   const memo = document.getElementById('exp-memo').value.trim();
-  const itemInput = document.getElementById('exp-item').value.trim();
-  const amountInput = parseFloat(document.getElementById('exp-amount').value);
+  const itemRows = getItemRows();
 
-  if (!date || !itemInput || !amountInput) { showToast('날짜, 품목, 금액을 입력해주세요.'); return; }
+  if (!date) { showToast('날짜를 입력해주세요.'); return; }
+  if (!itemRows.length) { showToast('품목을 입력해주세요.'); return; }
 
   const btn = document.getElementById('save-expense-btn');
   btn.disabled = true; btn.textContent = '저장 중...';
@@ -1313,54 +1360,17 @@ async function saveExpense() {
       file_type = currentFileType;
     }
 
-    // AI 분석 결과 품목 또는 쉼표 구분 품목 처리
-    const aiItems = getParsedItems();
-    const manualItems = itemInput.split(',').map(s => s.trim()).filter(Boolean);
     const group_id = Date.now().toString();
+    const savedItems = [];
 
-    let savedItems = [];
-    if (aiItems && aiItems.length > 1) {
-      // AI 분석 결과로 품목별 저장
-      for (let i = 0; i < aiItems.length; i++) {
-        const [row] = await api('POST', 'expenses', {
-          date, category, store: store || null, memo: memo || null,
-          item: aiItems[i].name,
-          amount: aiItems[i].amount,
-          file_url: i === 0 ? file_url : null,
-          file_type: i === 0 ? file_type : null,
-          group_id
-        });
-        savedItems.push(row);
-      }
-      // 할인 항목 추가
-      if (lastParsedDiscount && lastParsedDiscount > 0) {
-        const [row] = await api('POST', 'expenses', {
-          date, category, store: store || null, memo: '할인',
-          item: '할인', amount: -lastParsedDiscount,
-          file_url: null, file_type: null, group_id
-        });
-        savedItems.push(row);
-      }
-    } else if (manualItems.length > 1) {
-      // 쉼표로 구분된 품목들 각각 저장 (금액은 균등 분배)
-      const perAmount = Math.round(amountInput / manualItems.length);
-      for (let i = 0; i < manualItems.length; i++) {
-        const amt = i === manualItems.length - 1 ? amountInput - perAmount * (manualItems.length - 1) : perAmount;
-        const [row] = await api('POST', 'expenses', {
-          date, category, store: store || null, memo: memo || null,
-          item: manualItems[i], amount: amt,
-          file_url: i === 0 ? file_url : null,
-          file_type: i === 0 ? file_type : null,
-          group_id
-        });
-        savedItems.push(row);
-      }
-    } else {
-      // 단일 품목
+    for (let i = 0; i < itemRows.length; i++) {
       const [row] = await api('POST', 'expenses', {
         date, category, store: store || null, memo: memo || null,
-        item: itemInput, amount: amountInput,
-        file_url, file_type, group_id
+        item: itemRows[i].name,
+        amount: itemRows[i].amount,
+        file_url: i === 0 ? file_url : null,
+        file_type: i === 0 ? file_type : null,
+        group_id
       });
       savedItems.push(row);
     }
