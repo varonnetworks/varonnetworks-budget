@@ -159,7 +159,7 @@
 <div class="app">
   <aside class="sidebar">
     <div class="sidebar-logo">
-      <h1>정상어학원<br>남동탄점</h1>
+      <h1>정상어학원<br>남동탄</h1>
       <span>운영비 관리 시스템</span>
     </div>
     <nav class="sidebar-nav">
@@ -849,20 +849,24 @@ async function editCell(event, expId, field, currentVal) {
 }
 
 async function editCategory(event, groupId, expId, currentCat) {
+  event.stopPropagation();
+  const el = event.currentTarget;
   const catNames = categories.map(c => c.name);
   const select = document.createElement('select');
-  select.style.cssText = 'font-size:11px;padding:2px 4px;border:1px solid var(--accent);border-radius:4px;font-family:inherit;';
+  select.style.cssText = 'font-size:11px;padding:2px 4px;border:1px solid var(--accent);border-radius:4px;font-family:inherit;max-width:90px;';
   catNames.forEach(name => {
     const opt = document.createElement('option');
     opt.value = name; opt.textContent = name;
     if (name === currentCat) opt.selected = true;
     select.appendChild(opt);
   });
-  const td = event.currentTarget;
-  td.innerHTML = '';
-  td.appendChild(select);
+  el.innerHTML = '';
+  el.appendChild(select);
   select.focus();
+
+  let changed = false;
   select.onchange = async () => {
+    changed = true;
     const newCat = select.value;
     try {
       if (groupId) {
@@ -876,7 +880,8 @@ async function editCategory(event, groupId, expId, currentCat) {
       renderLedger(); showToast('카테고리 수정됨');
     } catch(e) { showToast('수정 실패: ' + e.message); renderLedger(); }
   };
-  select.onblur = () => renderLedger();
+  select.onblur = () => { setTimeout(() => { if (!changed) renderLedger(); }, 200); };
+  select.onkeydown = e => { if(e.key==='Escape') renderLedger(); };
 }
 
 async function deleteExpense(id) {
