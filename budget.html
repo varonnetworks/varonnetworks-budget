@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💰</text></svg>">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>정상어학원 운영비 관리</title>
@@ -160,7 +159,7 @@
 <div class="app">
   <aside class="sidebar">
     <div class="sidebar-logo">
-      <h1>정상어학원<br>한다슬</h1>
+      <h1>정상어학원<br>남동탄분원</h1>
       <span>운영비 관리 시스템</span>
     </div>
     <nav class="sidebar-nav">
@@ -201,6 +200,12 @@
           <button onclick="changeMonth(1)">&#8250;</button>
           <button class="today-btn" onclick="goToday()">이번달</button>
         </div>
+      </div>
+      <!-- 누적 잔액 -->
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;padding:14px 18px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);">
+        <div style="font-size:12px;font-weight:600;color:var(--text3);white-space:nowrap;">누적 잔액</div>
+        <div style="font-size:24px;font-weight:800;color:#0ea5e9;" id="m-total-balance">₩0</div>
+        <div style="font-size:11px;color:var(--text3);" id="m-total-balance-sub"></div>
       </div>
       <div class="metric-grid">
         <div class="metric clickable" onclick="showIncomeDetail()">
@@ -666,6 +671,14 @@ function renderDashboard() {
   const totalExp = mExp.reduce((s,e) => s + Number(e.amount), 0);
   const balance = totalInc - totalExp;
   const withR = mExp.filter(e => e.file_url).length;
+
+  // 누적 잔액 (전체 기간)
+  const allIncome = incomes.reduce((s,i) => s + Number(i.amount), 0);
+  const allExpense = expenses.filter(e => Number(e.amount) > 0).reduce((s,e) => s + Number(e.amount), 0);
+  const allBalance = allIncome - allExpense;
+  const totalBalEl = document.getElementById('m-total-balance');
+  totalBalEl.textContent = fmt(allBalance);
+  totalBalEl.style.color = allBalance >= 0 ? '#0ea5e9' : '#dc2626';
 
   document.getElementById('m-income').textContent = fmt(totalInc);
   const byType = {};
