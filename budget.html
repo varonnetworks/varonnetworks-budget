@@ -1159,35 +1159,29 @@ function parsePdfText(text) {
   else if (text.includes('G마켓') || text.includes('지마켓')) result.store = 'G마켓';
   else if (text.includes('11번가')) result.store = '11번가';
 
-  // 실제 결제금액 추출
+  // 실제 결제금액 추출 - "원" 앞에 오는 합리적인 크기의 숫자
   const totalPatterns = [
-    /실제\s*총\s*결제\s*금액[\s\S]{0,30}?([1-9][\d,]{0,10})\s*원/,
-    /합계\s+([1-9][\d,]{0,10})\s*원/,
-    /합계\s*([1-9][\d,]{0,10})\s*원/,
-    /합계금액[\s\S]{0,30}?([1-9][\d,]{0,10})\s*원/,
-    /총\s*금액[\s\S]{0,30}?([1-9][\d,]{0,10})\s*원/,
-    /결제금액[\s\S]{0,30}?([1-9][\d,]{0,10})\s*원/,
-    /총\s*결제\s*금액[\s\S]{0,30}?([1-9][\d,]{0,10})\s*원/,
+    /실제\s*총\s*결제\s*금액[\s\S]{0,50}?([1-9][\d,]{1,9})\s*원/,
+    /합계[\s\S]{0,20}?([1-9][\d,]{1,9})\s*원/,
+    /합계금액[\s\S]{0,50}?([1-9][\d,]{1,9})\s*원/,
+    /총\s*금액[\s\S]{0,50}?([1-9][\d,]{1,9})\s*원/,
+    /결제금액[\s\S]{0,50}?([1-9][\d,]{1,9})\s*원/,
+    /([1-9][\d,]{1,9})\s*원합계/,   // 뒤집힌 경우: "33,450 원합계"
+    /([1-9][\d,]{1,9})\s*원\s*합계/,
   ];
   for (const pattern of totalPatterns) {
     const m = text.match(pattern);
     if (m) { result.total = parseInt(m[1].replace(/,/g, '')); break; }
   }
 
-  // 할인금액 추출 - 총거래액과 실결제 차이로 계산
-  const grossMatch = text.match(/총\s*거래액\s*합계\s*[\s\S]{0,20}?([1-9][\d,]+)/);
-  const netMatch = text.match(/실제\s*총\s*결제\s*금액\s*[\s\S]{0,20}?([1-9][\d,]+)/);
+  // 할인금액 추출
+  const grossMatch = text.match(/총\s*거래액\s*합계[\s\S]{0,20}?([1-9][\d,]{1,9})/);
+  const netMatch = text.match(/실제\s*총\s*결제\s*금액[\s\S]{0,20}?([1-9][\d,]{1,9})/);
   if (grossMatch && netMatch) {
     const gross = parseInt(grossMatch[1].replace(/,/g,''));
     const net = parseInt(netMatch[1].replace(/,/g,''));
     const diff = gross - net;
     if (diff > 0) result.discount = diff;
-  } else {
-    const discountMatch = text.match(/할인\s*금액\s*[\s\S]{0,10}?([1-9][\d,]+)/);
-    if (discountMatch) {
-      const discount = parseInt(discountMatch[1].replace(/,/g,''));
-      if (discount > 0 && discount < (result.total || Infinity)) result.discount = discount;
-    }
   }
 
   // 품목 추출 - 쿠팡 거래명세표 형식
@@ -1199,40 +1193,34 @@ function parsePdfText(text) {
     if (name && amount && amount < 10000000) result.items.push({ name, amount });
   }
 
-  // 네이버/일반 영수증 - 라인 기반 파싱
-  // 실제 추출 텍스트: "값 라벨" 또는 "라벨 값" 형식 혼재
-  if (!result.items.length || !result.total) {
-    const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      // "상품명" 라벨 찾기
-      if (line.includes('상품명')) {
-        // 라벨 뒤에 값이 있으면
-        const after = line.replace('상품명', '').trim();
-        if (after) { result.items.push({ name: after, amount: result.total || 0 }); }
-        // 라벨 앞에 값이 있으면 (뒤집힌 경우)
-        else if (i > 0 && !result.items.length) {
-          const before = lines[i-1].trim();
-          if (before && !before.match(/^\d/)) result.items.push({ name: before, amount: result.total || 0 });
-        }
-      }
-      // "합계" 라벨 찾기 (아직 금액 못 찾은 경우)
-      if (!result.total && line.includes('합계')) {
-        const after = line.replace('합계', '').trim();
-        const numMatch = after.match(/([1-9][\d,]{0,10})\s*원/);
-        if (numMatch) result.total = parseInt(numMatch[1].replace(/,/g, ''));
-        else if (i + 1 < lines.length) {
-          const nextNum = lines[i+1].match(/([1-9][\d,]{0,10})\s*원/);
-          if (nextNum) result.total = parseInt(nextNum[1].replace(/,/g, ''));
+  // 네이버/일반 영수증 - 상품명 추출
+  if (!result.items.length) {
+    // 정상: "상품명 xxx 합계"
+    const m1 = text.match(/상품명\s+(.+?)(?=\s*[\d,]+\s*원|\s*합계)/s);
+    if (m1) {
+      const name = m1[1].trim().replace(/\s+/g, ' ');
+      if (name) result.items.push({ name, amount: result.total || 0 });
+    }
+    // 뒤집힌: "xxx 상품명" - 상품명 라벨 앞에 값이 있는 경우
+    else {
+      const m2 = text.match(/(.+?)\s*상품명/s);
+      if (m2) {
+        // 마지막 의미있는 단어들 추출
+        const before = m2[1].split(/\n/).map(l=>l.trim()).filter(l=>l && !l.match(/^\d{4}[\d.:\s]+$/) && !l.match(/^주문번호|거래일시|구매영수증$/));
+        if (before.length) {
+          const name = before[before.length-1].replace(/\s+/g,' ').trim();
+          if (name) result.items.push({ name, amount: result.total || 0 });
         }
       }
     }
-    // total 업데이트
-    if (result.total && result.items.length) result.items[0].amount = result.total;
   }
 
-  if (result.items.length) result.summary = result.items.map(i => i.name).join(', ');
-  else if (result.total) result.summary = '구매 내역';
+  if (result.items.length) {
+    if (result.total) result.items[result.items.length-1].amount = result.total;
+    result.summary = result.items.map(i => i.name).join(', ');
+  } else if (result.total) {
+    result.summary = '구매 내역';
+  }
 
   // 카테고리 추정
   const foodKeywords = ['캔디', '과자', '음료', '식품', '커피', '간식', '롤리팝', '초콜릿'];
@@ -1254,9 +1242,6 @@ async function analyzeReceipt(file, isPdf) {
       try {
         text = await extractPdfText(file);
         console.log('PDF 추출 텍스트:', text);
-        // 글자 사이 공백 제거 (한글 자모 사이 공백)
-        text = text.replace(/([가-힣])\s+([가-힣])/g, '$1$2').replace(/([가-힣])\s+([가-힣])/g, '$1$2');
-        console.log('공백 제거 후:', text);
       } catch(e) {
         console.error('PDF 추출 에러:', e);
         document.getElementById('ai-result-area').innerHTML = `<div class="ai-result" style="background:var(--red-bg);border-color:#fecaca;"><div style="color:var(--red);font-size:12px;">PDF 텍스트 추출 실패: ${e.message}</div></div>`;
