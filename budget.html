@@ -156,14 +156,36 @@
   .item-row-del { background:none;border:none;cursor:pointer;color:var(--text3);padding:4px;border-radius:5px;flex-shrink:0;display:flex; }
   .item-row-del:hover { background:var(--red-bg);color:var(--red); }
   .loading-overlay .spinner { width: 28px; height: 28px; border-width: 3px; }
-  @media (max-width: 900px) { .app { grid-template-columns: 1fr; } .sidebar { display: none; } .metric-grid { grid-template-columns: repeat(2,1fr); } .two-col { grid-template-columns: 1fr; } .form-row { grid-template-columns: 1fr; } }
+  .mobile-header { display:none; align-items:center; justify-content:space-between; padding:12px 16px; background:var(--surface); border-bottom:1px solid var(--border); position:sticky; top:0; z-index:100; }
+  .mobile-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:140; }
+  .hamburger { background:none; border:none; cursor:pointer; padding:6px; border-radius:var(--radius); color:var(--text); }
+  .hamburger:hover { background:var(--surface2); }
+  @media (max-width: 900px) {
+    .app { grid-template-columns: 1fr; }
+    .sidebar { display:none; position:fixed; top:0; left:0; width:260px; height:100vh; z-index:150; box-shadow:var(--shadow-md); }
+    .sidebar.open { display:block; }
+    .mobile-overlay.open { display:block; }
+    .mobile-header { display:flex; }
+    .metric-grid { grid-template-columns: repeat(2,1fr); }
+    .two-col { grid-template-columns: 1fr; }
+    .form-row { grid-template-columns: 1fr; }
+    .main { padding: 16px; }
+  }
 </style>
 </head>
 <body>
+<div class="mobile-header">
+  <button class="hamburger" onclick="toggleSidebar()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <div style="font-size:13px;font-weight:700;">정상어학원 남동탄점</div>
+  <div style="width:34px;"></div>
+</div>
+<div class="mobile-overlay" id="mobile-overlay" onclick="toggleSidebar()"></div>
 <div class="app">
   <aside class="sidebar">
     <div class="sidebar-logo">
-      <h1>정상어학원<br>남동탄분원</h1>
+      <h1>정상어학원<br>남동탄</h1>
       <span>운영비 관리 시스템</span>
     </div>
     <nav class="sidebar-nav">
@@ -645,11 +667,19 @@ function populateCategorySelects() {
   document.getElementById('exp-cat-filter').innerHTML = '<option value="">전체 카테고리</option>' + opts;
 }
 
+function toggleSidebar() {
+  document.querySelector('.sidebar').classList.toggle('open');
+  document.getElementById('mobile-overlay').classList.toggle('open');
+}
+
 function showSection(id, el) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('section-' + id).classList.add('active');
   if (el) el.classList.add('active');
+  // 모바일에서 메뉴 선택 후 닫기
+  document.querySelector('.sidebar').classList.remove('open');
+  document.getElementById('mobile-overlay').classList.remove('open');
   ({ dashboard: renderDashboard, ledger: renderLedger, search: renderSearch, category: renderCategory, supply: renderSupply, settings: renderSettings })[id]?.();
 }
 
