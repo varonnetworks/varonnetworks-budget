@@ -163,7 +163,7 @@
 <div class="app">
   <aside class="sidebar">
     <div class="sidebar-logo">
-      <h1>정상어학원<br>남동탄점</h1>
+      <h1>정상어학원<br>남동탄분원</h1>
       <span>운영비 관리 시스템</span>
     </div>
     <nav class="sidebar-nav">
@@ -550,6 +550,13 @@ let expenses = [], incomes = [], categories = [];
 let currentFileBlob = null, currentFileType = null, currentFileName = null;
 let lastParsedItems = null;
 let lastParsedDiscount = null;
+
+function updateItemTotal() {
+  const amounts = [...document.querySelectorAll('.item-amount')].map(i => parseFloat(i.value)||0);
+  const total = amounts.reduce((s,v) => s+v, 0);
+  const el = document.getElementById('item-total-display');
+  if (el) el.textContent = '₩' + Math.round(total).toLocaleString('ko-KR');
+}
 
 function addItemRow(name='', amount='', quantity='') {
   const rows = document.getElementById('item-rows');
