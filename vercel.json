@@ -2,6 +2,9 @@
   "functions": {
     "api/analyze.js": {
       "maxDuration": 30
+    },
+    "api/chat.js": {
+      "maxDuration": 10
     }
   }
 }
