@@ -63,7 +63,14 @@ td.amt-inc{color:var(--c-income);font-weight:600}
 .btn:hover{opacity:0.85}.btn:disabled{opacity:0.5;cursor:not-allowed}
 .btn-sm{padding:6px 12px;font-size:12px}
 /* 폼 + 참조표 레이아웃 */
-.form-with-ref{display:grid;grid-template-columns:1fr 260px;gap:12px;align-items:start}
+.preview-side{background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px;position:sticky;top:100px;display:flex;flex-direction:column;align-items:center;gap:8px;min-height:140px;justify-content:center}
+.preview-side img{width:100%;max-height:180px;object-fit:contain;border-radius:6px;cursor:pointer;border:1px solid var(--border)}
+.preview-side .pdf-link{display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--c-primary);text-decoration:none;font-size:11px;text-align:center;padding:8px}
+.preview-side .pdf-link i{font-size:36px}
+.preview-side .no-file{color:var(--text3);font-size:11px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px}
+.preview-side .no-file i{font-size:28px}
+
+.form-with-ref{display:grid;grid-template-columns:150px 1fr 260px;gap:12px;align-items:start}
 .inline-form{background:#F0F7FF;border:1.5px dashed var(--c-primary);border-radius:10px;padding:1rem}
 .ref-table-box{background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px;font-size:11px;position:sticky;top:100px}
 .ref-table-box .ref-title{font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px;display:flex;align-items:center;gap:5px}
@@ -99,6 +106,8 @@ td.amt-inc{color:var(--c-income);font-weight:600}
 .bar-label{width:100px;font-size:12px;color:var(--text2);text-align:right;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .bar-track{flex:1;height:16px;background:#F0F4FA;border-radius:8px;overflow:hidden}
 .bar-fill{height:100%;border-radius:8px;transition:width 0.4s}
+.bar-row:hover .bar-track{opacity:0.8}
+.bar-row:hover .bar-label{color:var(--c-primary)}
 .bar-amt{width:90px;font-size:12px;color:var(--text);text-align:right;flex-shrink:0}
 .supply-item{display:flex;align-items:center;gap:10px;padding:12px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;background:#fff}
 .supply-name{font-weight:600;font-size:13px}
@@ -153,9 +162,14 @@ td.amt-inc{color:var(--c-income);font-weight:600}
 .empty{text-align:center;padding:2rem;color:var(--text3);font-size:13px}
 .empty i{font-size:36px;display:block;margin-bottom:8px}
 #mobile-menu{display:none;position:fixed;top:10px;left:10px;z-index:100;background:var(--c-primary);color:#fff;border:none;border-radius:8px;padding:8px 10px;cursor:pointer;font-size:18px}
+@media(max-width:1100px){
+  .form-with-ref{grid-template-columns:1fr 260px}
+  .preview-side{display:none!important}
+}
 @media(max-width:900px){
   .form-with-ref{grid-template-columns:1fr}
   .ref-table-box{display:none}
+  .preview-side{display:none!important}
 }
 @media(max-width:768px){
   #sidebar{transform:translateX(-100%);transition:transform 0.3s}
@@ -216,6 +230,44 @@ td.amt-inc{color:var(--c-income);font-weight:600}
   </div>
 </div>
 
+<div id="edit-overlay" onclick="if(event.target===this)closeEdit()" style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:350;display:none;align-items:center;justify-content:center;padding:1rem">
+  <div id="edit-box" style="background:#fff;border-radius:16px;padding:1.5rem;width:480px;max-width:95vw;max-height:90vh;overflow-y:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+      <h3 style="font-size:15px;font-weight:700"><i class="ti ti-edit" style="color:var(--c-primary)"></i> 내역 수정</h3>
+      <button class="btn btn-ghost btn-sm" onclick="closeEdit()"><i class="ti ti-x"></i></button>
+    </div>
+    <input type="hidden" id="edit-id">
+    <div class="form-grid" style="grid-template-columns:1fr 1fr">
+      <div class="fgroup"><label>날짜 *</label><input type="date" id="edit-date"></div>
+      <div class="fgroup">
+        <label>구분 *</label>
+        <select id="edit-kind" style="border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:13px">
+          <option value="지출">지출</option>
+          <option value="입금">입금</option>
+        </select>
+      </div>
+      <div class="fgroup">
+        <label>계정과목 *</label>
+        <select id="edit-acct-sel" style="border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:13px"></select>
+      </div>
+      <div class="fgroup"><label>거래처</label><input type="text" id="edit-vendor" placeholder="거래처명"></div>
+      <div class="fgroup"><label>금액 *</label><input type="number" id="edit-amt" placeholder="0"></div>
+      <div class="fgroup" id="edit-qty-field">
+        <label>수량</label>
+        <input type="number" id="edit-qty" placeholder="1" min="1">
+      </div>
+    </div>
+    <div class="fgroup" style="margin-top:8px"><label>적요</label><textarea id="edit-memo" rows="2" placeholder="거래 내용 메모"></textarea></div>
+    <div style="margin-top:10px;padding:10px;background:#F8F9FC;border-radius:8px;font-size:12px;color:var(--text2)">
+      <i class="ti ti-paperclip"></i> 영수증은 삭제 후 재등록이 필요합니다
+    </div>
+    <div class="form-actions" style="margin-top:12px">
+      <button class="btn btn-ghost" onclick="closeEdit()">취소</button>
+      <button class="btn btn-primary" onclick="saveEdit()"><i class="ti ti-check"></i> 수정 저장</button>
+    </div>
+  </div>
+</div>
+
 <div id="layout" style="display:none">
 <aside id="sidebar">
   <div id="sidebar-top">
@@ -270,6 +322,20 @@ td.amt-inc{color:var(--c-income);font-weight:600}
 
       <div id="form-area" style="display:none">
         <div class="form-with-ref">
+          <!-- 영수증 미리보기 사이드 -->
+          <div class="preview-side" id="preview-side">
+            <div class="no-file" id="preview-empty">
+              <i class="ti ti-photo"></i>
+              <span>영수증 첨부 시<br>여기에 표시됩니다</span>
+            </div>
+            <img id="preview-side-img" src="" alt="영수증 미리보기" style="display:none" onclick="showReceiptPreview()">
+            <a id="preview-side-pdf" href="#" target="_blank" class="pdf-link" style="display:none">
+              <i class="ti ti-file-type-pdf"></i>
+              <span id="preview-side-pdf-name"></span>
+              <span style="font-size:10px;color:var(--text3)">클릭하여 열기</span>
+            </a>
+            <button type="button" id="preview-side-del" style="display:none;font-size:11px;color:var(--c-accent);background:none;border:none;cursor:pointer" onclick="clearReceipt()"><i class="ti ti-trash"></i> 삭제</button>
+          </div>
           <div class="inline-form">
             <div class="form-grid">
               <div class="fgroup">
@@ -375,6 +441,18 @@ td.amt-inc{color:var(--c-income);font-weight:600}
       </div>
       <div class="stat-grid" id="stats-summary"></div>
       <div id="stats-charts"></div>
+      <div id="stats-detail" style="display:none;margin-top:1rem">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <span id="stats-detail-title" style="font-size:13px;font-weight:700;color:var(--text)"></span>
+          <button class="btn btn-ghost btn-sm" onclick="closeStatsDetail()"><i class="ti ti-x"></i></button>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>날짜</th><th>거래처</th><th>적요</th><th style="text-align:right">금액</th></tr></thead>
+            <tbody id="stats-detail-body"></tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -440,7 +518,7 @@ const ACCOUNTS=[
   {code:'901',name:'이자수익'},{code:'930',name:'잡이익'},{code:'931',name:'이자비용'},{code:'960',name:'잡손실'}
 ];
 const BRANCHES=['남동탄 분원','수원 분원','장안 분원','서수원 분원','운정 1분원','운정 2분원'];
-let curUser=null,curBranch=null,allEntries=[],receiptB64=null,chatHistory=[];
+let curUser=null,curBranch=null,allEntries=[],receiptB64=null,pendingFile=null,chatHistory=[];
 
 function showLoading(v){document.getElementById('loading-overlay').classList[v?'add':'remove']('show')}
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
@@ -609,27 +687,45 @@ function handleDrop(e){
 }
 function previewReceipt(inp){const file=inp.files[0];if(file)processFile(file)}
 function processFile(file){
-  if(file.size>5*1024*1024){toast('5MB 이하 파일만 가능합니다');return}
+  if(file.size>10*1024*1024){toast('10MB 이하 파일만 가능합니다');return}
   if(!['image/jpeg','image/png','image/gif','image/webp','application/pdf'].includes(file.type)){toast('JPG·PNG·PDF만 가능합니다');return}
-  const reader=new FileReader();
-  reader.onload=e=>{
-    receiptB64=e.target.result;
-    document.getElementById('upload-label').textContent=file.name;
-    document.getElementById('upload-area').classList.add('has-file');
-    if(file.type.startsWith('image/')){
-      document.getElementById('receipt-img').src=receiptB64;
+  pendingFile=file;
+  document.getElementById('upload-label').textContent=file.name;
+  document.getElementById('upload-area').classList.add('has-file');
+  document.getElementById('receipt-filename').textContent=file.name;
+  // 사이드 미리보기
+  const sideImg=document.getElementById('preview-side-img');
+  const sidePdf=document.getElementById('preview-side-pdf');
+  const sideDel=document.getElementById('preview-side-del');
+  document.getElementById('preview-empty').style.display='none';
+  sideDel.style.display='block';
+  if(file.type.startsWith('image/')){
+    const reader=new FileReader();
+    reader.onload=e=>{
+      sideImg.src=e.target.result;
+      sideImg.style.display='block';
+      sidePdf.style.display='none';
+      document.getElementById('receipt-img').src=e.target.result;
       document.getElementById('receipt-preview').style.display='flex';
-    }
-    document.getElementById('receipt-filename').textContent=file.name;
-  };
-  reader.readAsDataURL(file);
+    };
+    reader.readAsDataURL(file);
+  } else {
+    sideImg.style.display='none';
+    document.getElementById('preview-side-pdf-name').textContent=file.name;
+    sidePdf.style.display='flex';
+    sidePdf.href='#';
+  }
 }
 function clearReceipt(){
-  receiptB64=null;
+  receiptB64=null;pendingFile=null;
   document.getElementById('f-receipt').value='';
   document.getElementById('upload-label').textContent='클릭 또는 드래그 (JPG·PNG·PDF)';
   document.getElementById('upload-area').classList.remove('has-file');
   document.getElementById('receipt-preview').style.display='none';
+  document.getElementById('preview-side-img').style.display='none';
+  document.getElementById('preview-side-pdf').style.display='none';
+  document.getElementById('preview-side-del').style.display='none';
+  document.getElementById('preview-empty').style.display='flex';
 }
 function showReceiptPreview(){
   document.getElementById('modal-content').innerHTML=`<img src="${document.getElementById('receipt-img').src}" alt="영수증">`;
@@ -686,7 +782,7 @@ function renderLedger(data){
   tbody.innerHTML='';
   document.getElementById('ledger-empty').style.display=data.length?'none':'block';
   data.forEach(e=>{
-    const isPdf=e.receipt_url&&e.receipt_url.startsWith('data:application/pdf');
+    const isPdf=e.receipt_url&&(e.receipt_url.endsWith('.pdf')||e.receipt_url.includes('.pdf?'));
     const receiptCell=e.receipt_url
       ?(isPdf?`<span style="font-size:11px;color:var(--c-primary);cursor:pointer" onclick="showReceiptRow(${e.id})"><i class="ti ti-file-type-pdf"></i> PDF</span>`
         :`<img src="${e.receipt_url}" style="width:36px;height:36px;border-radius:6px;object-fit:cover;cursor:pointer;border:1px solid var(--border)" onclick="showReceiptRow(${e.id})" alt="영수증">`)
@@ -701,14 +797,19 @@ function renderLedger(data){
       <td style="text-align:center;color:var(--text2)">${e.qty||'-'}</td>
       <td class="${e.kind==='지출'?'amt-exp':'amt-inc'}" style="text-align:right">${e.kind==='지출'?'-':'+'}<b>${e.amt.toLocaleString()}</b></td>
       <td>${receiptCell}</td>
-      <td><button class="btn btn-ghost btn-sm" onclick="deleteEntry(${e.id})" style="padding:4px 8px;font-size:11px"><i class="ti ti-trash"></i></button></td>`;
+      <td style="white-space:nowrap">
+        <button class="btn btn-ghost btn-sm" onclick="openEdit(${e.id})" style="padding:4px 8px;font-size:11px;margin-right:3px"><i class="ti ti-edit"></i></button>
+        <button class="btn btn-ghost btn-sm" onclick="deleteEntry(${e.id})" style="padding:4px 8px;font-size:11px;color:var(--c-accent)"><i class="ti ti-trash"></i></button>
+      </td>`;
     tbody.appendChild(tr);
   });
 }
 function showReceiptRow(id){
   const e=allEntries.find(x=>x.id==id);if(!e||!e.receipt_url)return;
-  const isPdf=e.receipt_url.startsWith('data:application/pdf');
-  document.getElementById('modal-content').innerHTML=`<p style="font-size:12px;color:var(--text3);margin-bottom:8px">${e.date} · ${e.acct}</p>${isPdf?`<a href="${e.receipt_url}" target="_blank" style="color:var(--c-primary)">PDF 열기</a>`:`<img src="${e.receipt_url}" alt="영수증">`}`;
+  const url=e.receipt_url;
+  const isPdf=url.endsWith('.pdf')||url.includes('.pdf?');
+  if(isPdf){window.open(url,'_blank');return;}
+  document.getElementById('modal-content').innerHTML=`<p style="font-size:12px;color:var(--text3);margin-bottom:8px">${e.date} · ${e.acct}</p><img src="${url}" alt="영수증">`;
   document.getElementById('modal-overlay').classList.add('open');
 }
 function clearFilter(){
@@ -729,13 +830,65 @@ async function saveEntry(){
   if(amt<=0){toast('금액을 입력하세요');return}
   const btn=document.getElementById('save-btn');
   btn.disabled=true;showLoading(true);
-  const payload={branch:curBranch,date,kind,code,acct,vendor,memo,amt,receipt_url:receiptB64};
+  let receipt_url=null;
+  // Storage 업로드
+  if(pendingFile){
+    const ext=pendingFile.name.split('.').pop();
+    const path=`${curBranch}/${date}_${Date.now()}.${ext}`;
+    const{data:upData,error:upErr}=await sb.storage.from('receipts').upload(path,pendingFile,{upsert:true});
+    if(upErr){
+      toast('영수증 업로드 오류: '+upErr.message);
+      btn.disabled=false;showLoading(false);return;
+    }
+    const{data:urlData}=sb.storage.from('receipts').getPublicUrl(path);
+    receipt_url=urlData.publicUrl;
+  }
+  const payload={branch:curBranch,date,kind,code,acct,vendor,memo,amt,receipt_url};
   if(code==='830') payload.qty=qty;
   const{error}=await sb.from('entries').insert(payload);
   btn.disabled=false;showLoading(false);
   if(error){toast('저장 오류: '+error.message);return}
   toast('저장되었습니다');toggleForm();loadEntries();
 }
+function openEdit(id){
+  const e=allEntries.find(x=>x.id==id);if(!e)return;
+  document.getElementById('edit-id').value=e.id;
+  document.getElementById('edit-date').value=e.date;
+  document.getElementById('edit-kind').value=e.kind;
+  document.getElementById('edit-vendor').value=e.vendor||'';
+  document.getElementById('edit-amt').value=e.amt;
+  document.getElementById('edit-memo').value=e.memo||'';
+  document.getElementById('edit-qty').value=e.qty||1;
+  document.getElementById('edit-qty-field').style.display=e.code==='830'?'flex':'none';
+  // 계정과목 셀렉트 채우기
+  const sel=document.getElementById('edit-acct-sel');
+  sel.innerHTML=ACCOUNTS.map(a=>`<option value="${a.code}" ${a.code===e.code?'selected':''}>${a.code} ${a.name}</option>`).join('');
+  sel.onchange=()=>{document.getElementById('edit-qty-field').style.display=sel.value==='830'?'flex':'none'};
+  document.getElementById('edit-overlay').style.display='flex';
+}
+function closeEdit(){document.getElementById('edit-overlay').style.display='none'}
+async function saveEdit(){
+  const id=document.getElementById('edit-id').value;
+  const date=document.getElementById('edit-date').value;
+  const kind=document.getElementById('edit-kind').value;
+  const sel=document.getElementById('edit-acct-sel');
+  const code=sel.value;
+  const acct=ACCOUNTS.find(a=>a.code===code)?.name||'';
+  const vendor=document.getElementById('edit-vendor').value.trim();
+  const amt=parseInt(document.getElementById('edit-amt').value)||0;
+  const memo=document.getElementById('edit-memo').value.trim();
+  const qty=parseInt(document.getElementById('edit-qty').value)||1;
+  if(!date||!code){toast('날짜와 계정과목은 필수입니다');return}
+  if(amt<=0){toast('금액을 입력하세요');return}
+  showLoading(true);
+  const payload={date,kind,code,acct,vendor,memo,amt};
+  if(code==='830') payload.qty=qty;
+  const{error}=await sb.from('entries').update(payload).eq('id',id);
+  showLoading(false);
+  if(error){toast('수정 오류: '+error.message);return}
+  toast('수정되었습니다');closeEdit();loadEntries();
+}
+
 async function deleteEntry(id){
   if(!confirm('삭제하시겠습니까?'))return;
   showLoading(true);
@@ -765,15 +918,37 @@ async function loadStats(){
   const sorted=Object.entries(byAcct).sort((a,b)=>b[1]-a[1]).slice(0,10);
   const maxVal=sorted[0]?sorted[0][1]:1;
   const colors=['#185FA5','#1D9E75','#BA7517','#A32D2D','#534AB7','#0F6E56','#D85A30','#3B6D11','#854F0B','#993556'];
+  // 통계용 entries 저장
+  window._statsEntries=entries;
   document.getElementById('stats-charts').innerHTML=`
-    <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:10px">계정과목별 지출 TOP 10</div>
+    <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:10px">계정과목별 지출 TOP 10 <span style="font-size:10px;color:var(--text3);font-weight:400">막대 클릭 시 상세내역</span></div>
     <div class="chart-bar-wrap">${sorted.map(([name,val],i)=>`
-      <div class="bar-row">
+      <div class="bar-row" onclick="showStatsDetail('${name}')" style="cursor:pointer" title="${name} 상세보기">
         <div class="bar-label" title="${name}">${name}</div>
         <div class="bar-track"><div class="bar-fill" style="width:${Math.round(val/maxVal*100)}%;background:${colors[i%colors.length]}"></div></div>
         <div class="bar-amt">${val.toLocaleString()}원</div>
       </div>`).join('')}${sorted.length===0?'<div class="empty">데이터 없음</div>':''}</div>`;
 }
+function showStatsDetail(acctName){
+  const entries=(window._statsEntries||[]).filter(e=>e.kind==='지출'&&e.acct===acctName);
+  entries.sort((a,b)=>b.date.localeCompare(a.date));
+  const tbody=document.getElementById('stats-detail-body');
+  tbody.innerHTML=entries.map(e=>`
+    <tr>
+      <td>${e.date}</td>
+      <td>${e.vendor||'-'}</td>
+      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.memo||'-'}</td>
+      <td class="amt-exp" style="text-align:right">-${e.amt.toLocaleString()}원</td>
+    </tr>`).join('');
+  const total=entries.reduce((s,e)=>s+e.amt,0);
+  document.getElementById('stats-detail-title').innerHTML=
+    `<span class="tag tag-acct">${acctName}</span> 상세내역 · ${entries.length}건 · 합계 <span style="color:var(--c-expense)">${total.toLocaleString()}원</span>`;
+  const detail=document.getElementById('stats-detail');
+  detail.style.display='block';
+  detail.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function closeStatsDetail(){document.getElementById('stats-detail').style.display='none'}
+
 async function loadAllBranch(){
   if(curUser.role==='user')return;
   const from=document.getElementById('ab-from')?.value;
@@ -822,7 +997,8 @@ async function loadSupplyCycle(){
       return `<div class="card supply-item">
         <div style="flex:1"><div class="supply-name">${s.name} <span style="font-size:11px;color:var(--text3)">(단위: ${s.unit})</span></div>
         <div class="supply-meta">구매 이력 없음 — 소모품비(830) 지출 시 적요에 품명을 포함하세요</div></div>
-        <span class="cycle-badge cycle-warn">이력없음</span></div>`;
+        <span class="cycle-badge cycle-warn">이력없음</span>
+      </div>`;
     }
     const totalQty=purchases.reduce((s,e)=>s+(e.qty||1),0);
     const firstDate=new Date(purchases[0].date);
@@ -835,18 +1011,53 @@ async function loadSupplyCycle(){
     let statusClass='cycle-ok',statusText='여유';
     if(remaining<=0){statusClass='cycle-over';statusText='구매필요'}
     else if(remaining<=daysPerUnit*0.3){statusClass='cycle-warn';statusText='검토필요'}
-    return `<div class="card supply-item">
-      <div style="flex:1">
-        <div class="supply-name">${s.name} <span style="font-size:11px;color:var(--text3)">(단위: ${s.unit})</span></div>
-        <div class="supply-meta" style="margin-top:4px">
-          ${s.unit}당 평균 ${daysPerUnit}일 소진 · 총 ${totalQty}${s.unit} 구매 · ${purchases.length}회
-          ${remaining>0?`· <span style="color:var(--c-income)">약 ${remaining}일 후 소진 예상</span>`:`· <span style="color:var(--c-expense)">소진 예정일 ${Math.abs(remaining)}일 초과</span>`}
+    // 최근 5개 이력
+    const recent=purchases.slice(-5).reverse();
+    const historyRows=recent.map((p,i)=>{
+      const nextP=recent[i-1];
+      let daysDiff='';
+      if(nextP){
+        const d=Math.round((new Date(p.date)-new Date(nextP.date))/86400000);
+        daysDiff=`<span style="font-size:10px;color:var(--text3);margin-left:6px">→ ${Math.abs(d)}일 후 재구매</span>`;
+      }
+      return `<tr style="font-size:11px">
+        <td style="padding:4px 8px;color:var(--text2)">${p.date}</td>
+        <td style="padding:4px 8px;text-align:center;font-weight:600">${p.qty||1}${s.unit}</td>
+        <td style="padding:4px 8px;color:var(--text3)">${p.amt?p.amt.toLocaleString()+'원':'-'}${daysDiff}</td>
+      </tr>`;
+    }).join('');
+    const historyHtml=`<div id="hist-${s.id}" style="display:none;margin-top:10px;border-top:1px solid var(--border);padding-top:10px">
+      <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:6px">최근 구매이력 (최대 5건)</div>
+      <table style="width:100%;border-collapse:collapse">
+        <thead><tr style="font-size:10px;color:var(--text3)"><th style="padding:3px 8px;text-align:left">날짜</th><th style="padding:3px 8px;text-align:center">수량</th><th style="padding:3px 8px;text-align:left">금액</th></tr></thead>
+        <tbody>${historyRows||'<tr><td colspan="3" style="padding:8px;color:var(--text3);font-size:11px">이력 없음</td></tr>'}</tbody>
+      </table>
+    </div>`;
+    return `<div class="card supply-item" style="flex-direction:column;align-items:stretch;cursor:pointer" onclick="toggleSupplyHist(${s.id})">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="flex:1">
+          <div class="supply-name">${s.name} <span style="font-size:11px;color:var(--text3)">(단위: ${s.unit})</span></div>
+          <div class="supply-meta" style="margin-top:4px">
+            ${s.unit}당 평균 ${daysPerUnit}일 소진 · 총 ${totalQty}${s.unit} 구매 · ${purchases.length}회
+            ${remaining>0?`· <span style="color:var(--c-income)">약 ${remaining}일 후 소진 예상</span>`:`· <span style="color:var(--c-expense)">소진 예정일 ${Math.abs(remaining)}일 초과</span>`}
+          </div>
         </div>
+        <span class="cycle-badge ${statusClass}">${statusText}</span>
+        <i class="ti ti-chevron-down" id="hist-icon-${s.id}" style="font-size:14px;color:var(--text3);transition:transform 0.2s"></i>
       </div>
-      <span class="cycle-badge ${statusClass}">${statusText}</span>
+      ${historyHtml}
     </div>`;
   }).join('');
 }
+function toggleSupplyHist(id){
+  const hist=document.getElementById('hist-'+id);
+  const icon=document.getElementById('hist-icon-'+id);
+  if(!hist) return;
+  const open=hist.style.display==='none';
+  hist.style.display=open?'block':'none';
+  if(icon) icon.style.transform=open?'rotate(180deg)':'rotate(0deg)';
+}
+
 async function loadSupplyItems(){
   const{data:supplies}=await sb.from('supplies').select('*').eq('branch',curBranch).order('created_at');
   const el=document.getElementById('supply-items-list');
