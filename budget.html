@@ -22,7 +22,8 @@ body{font-family:'Apple SD Gothic Neo','Pretendard',sans-serif;background:var(--
 #role-badge{font-size:10px;background:rgba(255,255,255,0.2);border-radius:4px;padding:2px 6px;font-weight:500}
 #branch-sel{background:rgba(255,255,255,0.15);border:none;color:#fff;border-radius:6px;padding:4px 8px;font-size:12px;cursor:pointer;max-width:130px}
 #branch-sel option{background:var(--c-primary);color:#fff}
-#user-badge{font-size:12px;background:rgba(255,255,255,0.15);border-radius:20px;padding:4px 10px;cursor:pointer;display:flex;align-items:center;gap:4px;white-space:nowrap}
+.nav-btn{font-size:12px;background:rgba(255,255,255,0.15);border-radius:20px;padding:4px 10px;cursor:pointer;display:flex;align-items:center;gap:4px;white-space:nowrap;border:none;color:#fff}
+.nav-btn:hover{background:rgba(255,255,255,0.25)}
 #tabs{background:#fff;border-bottom:1px solid var(--border);display:flex;overflow-x:auto;padding:0 1rem;position:sticky;top:44px;z-index:90}
 #tabs::-webkit-scrollbar{height:0}
 .tab{padding:10px 14px;font-size:13px;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;display:flex;align-items:center;gap:5px;transition:color 0.15s}
@@ -60,20 +61,42 @@ td.amt-inc{color:var(--c-income);font-weight:600}
 .fgroup input,.fgroup select,.fgroup textarea{border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:13px;background:#fff;color:var(--text);outline:none;width:100%}
 .fgroup input:focus,.fgroup select:focus,.fgroup textarea:focus{border-color:var(--c-primary)}
 .form-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:10px}
-label.upload-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border:1px dashed var(--border);border-radius:6px;cursor:pointer;font-size:12px;color:var(--text2)}
-.receipt-thumb{width:36px;height:36px;border-radius:6px;object-fit:cover;cursor:pointer;border:1px solid var(--border)}
+/* 구분 토글 버튼 */
+.kind-toggle{display:flex;gap:0;border-radius:7px;overflow:hidden;border:1px solid var(--border)}
+.kind-btn{flex:1;padding:7px 12px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:#fff;color:var(--text2);transition:all 0.15s}
+.kind-btn.active-exp{background:var(--c-expense);color:#fff}
+.kind-btn.active-inc{background:var(--c-income);color:#fff}
+/* 계정과목 콤보 */
+.acct-combo{position:relative}
+.acct-combo input{width:100%}
+.acct-dropdown{position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid var(--c-primary);border-radius:0 0 8px 8px;max-height:200px;overflow-y:auto;z-index:50;display:none}
+.acct-dropdown.show{display:block}
+.acct-option{padding:7px 10px;font-size:12px;cursor:pointer;display:flex;gap:8px}
+.acct-option:hover{background:#F0F7FF}
+.acct-option .code{color:var(--c-primary);font-weight:700;width:32px;flex-shrink:0}
+/* 영수증 */
+.upload-area{border:1.5px dashed var(--border);border-radius:8px;padding:10px 14px;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2);transition:border-color 0.15s}
+.upload-area:hover{border-color:var(--c-primary)}
+.upload-area.has-file{border-color:var(--c-income);background:#E1F5EE10}
+.receipt-preview{display:flex;align-items:center;gap:8px;margin-top:6px}
+.receipt-thumb{width:48px;height:48px;border-radius:6px;object-fit:cover;cursor:pointer;border:1px solid var(--border)}
 .receipt-placeholder{width:36px;height:36px;border-radius:6px;background:#F0F4FA;display:flex;align-items:center;justify-content:center;color:var(--text3)}
+/* 단축키 힌트 */
+.shortcut-hint{font-size:10px;color:var(--text3);margin-top:3px}
+/* 차트 */
 .chart-bar-wrap{margin-top:8px}
 .bar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
 .bar-label{width:100px;font-size:12px;color:var(--text2);text-align:right;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .bar-track{flex:1;height:16px;background:#F0F4FA;border-radius:8px;overflow:hidden}
 .bar-fill{height:100%;border-radius:8px;transition:width 0.4s}
 .bar-amt{width:90px;font-size:12px;color:var(--text);text-align:right;flex-shrink:0}
+/* 소모품 */
 .supply-item{display:flex;align-items:center;gap:10px;padding:10px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;background:#fff}
 .supply-name{font-weight:600;font-size:13px;flex:1}
 .supply-meta{font-size:11px;color:var(--text3);margin-top:3px}
 .cycle-badge{font-size:11px;padding:3px 9px;border-radius:10px;font-weight:600;white-space:nowrap}
 .cycle-ok{background:#E1F5EE;color:#0F6E56}.cycle-warn{background:#FAEEDA;color:#854F0B}.cycle-over{background:#FCEBEB;color:#A32D2D}
+/* 챗봇 */
 #chat-fab{position:fixed;bottom:20px;right:20px;width:50px;height:50px;border-radius:50%;background:var(--c-primary);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 4px 16px rgba(27,94,171,0.4);z-index:200;transition:transform 0.2s}
 #chat-fab:hover{transform:scale(1.1)}
 #chat-panel{position:fixed;bottom:80px;right:20px;width:320px;max-height:480px;background:#fff;border:1px solid var(--border);border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,0.15);z-index:200;display:flex;flex-direction:column;overflow:hidden}
@@ -88,10 +111,17 @@ label.upload-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px
 #chat-input-row{display:flex;gap:6px;padding:10px;border-top:1px solid var(--border)}
 #chat-input{flex:1;border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size:12px;outline:none}
 #chat-send{background:var(--c-primary);color:#fff;border:none;border-radius:8px;padding:7px 12px;cursor:pointer;font-size:14px}
+/* 모달 */
 #modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:300;display:none;align-items:center;justify-content:center;padding:1rem}
 #modal-overlay.open{display:flex}
 #modal-box{background:#fff;border-radius:16px;max-width:90vw;max-height:90vh;overflow:auto;padding:1.5rem;min-width:280px}
 #modal-box img{max-width:100%;border-radius:8px}
+/* 비밀번호 변경 모달 */
+#pw-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:400;display:none;align-items:center;justify-content:center;padding:1rem}
+#pw-overlay.open{display:flex}
+#pw-box{background:#fff;border-radius:16px;padding:1.5rem;width:320px;box-shadow:0 8px 32px rgba(0,0,0,0.2)}
+#pw-box h3{font-size:15px;font-weight:700;margin-bottom:1rem}
+/* 로그인 */
 #login-screen{position:fixed;inset:0;background:var(--c-primary);display:flex;align-items:center;justify-content:center;z-index:500}
 .login-card{background:#fff;border-radius:16px;padding:2rem;width:320px;box-shadow:0 8px 32px rgba(0,0,0,0.2)}
 .login-logo{font-size:22px;font-weight:800;color:var(--c-primary);text-align:center;margin-bottom:4px}
@@ -102,6 +132,7 @@ label.upload-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px
 .login-btn{width:100%;background:var(--c-primary);color:#fff;border:none;border-radius:8px;padding:11px;font-size:14px;font-weight:700;cursor:pointer;margin-top:6px}
 .login-btn:disabled{opacity:0.6;cursor:not-allowed}
 .login-err{color:var(--c-accent);font-size:12px;text-align:center;min-height:18px;margin-top:6px}
+/* 로딩/토스트 */
 #loading-overlay{position:fixed;inset:0;background:rgba(255,255,255,0.7);z-index:400;display:none;align-items:center;justify-content:center;flex-direction:column;gap:10px}
 #loading-overlay.show{display:flex}
 .spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--c-primary);border-radius:50%;animation:spin 0.7s linear infinite}
@@ -122,6 +153,7 @@ label.upload-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px
 <div id="loading-overlay"><div class="spinner"></div><span style="font-size:13px;color:var(--text2)">처리 중...</span></div>
 <div id="toast"></div>
 
+<!-- 로그인 -->
 <div id="login-screen">
   <div class="login-card">
     <div class="login-logo"><i class="ti ti-building-school" style="color:var(--c-accent)"></i> JLS 운영비 관리</div>
@@ -133,11 +165,36 @@ label.upload-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px
   </div>
 </div>
 
+<!-- 비밀번호 변경 모달 -->
+<div id="pw-overlay" onclick="if(event.target===this)closePw()">
+  <div id="pw-box">
+    <h3><i class="ti ti-key" style="color:var(--c-primary)"></i> 비밀번호 변경</h3>
+    <div class="fgroup" style="margin-bottom:10px">
+      <label>현재 비밀번호</label>
+      <input type="password" id="pw-cur" placeholder="현재 비밀번호">
+    </div>
+    <div class="fgroup" style="margin-bottom:10px">
+      <label>새 비밀번호</label>
+      <input type="password" id="pw-new" placeholder="새 비밀번호">
+    </div>
+    <div class="fgroup" style="margin-bottom:14px">
+      <label>새 비밀번호 확인</label>
+      <input type="password" id="pw-new2" placeholder="새 비밀번호 재입력">
+    </div>
+    <div id="pw-err" style="color:var(--c-accent);font-size:12px;min-height:16px;margin-bottom:10px"></div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" onclick="closePw()">취소</button>
+      <button class="btn btn-primary" onclick="changePw()">변경</button>
+    </div>
+  </div>
+</div>
+
 <div id="app" style="display:none">
   <nav id="nav">
     <div id="nav-brand"><i class="ti ti-building-school"></i> JLS 운영비 <span id="role-badge"></span></div>
     <select id="branch-sel" onchange="changeBranch(this.value)"></select>
-    <div id="user-badge" onclick="doLogout()"><i class="ti ti-logout" style="font-size:14px"></i> 로그아웃</div>
+    <button class="nav-btn" onclick="showPw()"><i class="ti ti-key" style="font-size:14px"></i> 비밀번호</button>
+    <button class="nav-btn" onclick="doLogout()"><i class="ti ti-logout" style="font-size:14px"></i> 로그아웃</button>
   </nav>
   <div id="tabs">
     <div class="tab active" onclick="showPage('ledger',this)"><i class="ti ti-list-details"></i> 거래내역</div>
@@ -147,7 +204,7 @@ label.upload-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px
   </div>
   <div id="main">
 
-    <!-- LEDGER -->
+    <!-- 거래내역 -->
     <div id="page-ledger" class="page active">
       <div class="stat-grid" id="ledger-stats"></div>
       <div class="card">
@@ -167,17 +224,62 @@ label.upload-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px
           <input type="text" id="f-memo" placeholder="적요검색" oninput="filterLocal()" style="max-width:110px">
           <button class="btn btn-ghost btn-sm" onclick="clearFilter()">초기화</button>
         </div>
+
+        <!-- 입력 폼 -->
         <div class="inline-form" id="add-form" style="display:none">
           <div class="form-grid">
-            <div class="fgroup"><label>날짜 *</label><input type="date" id="f-date"></div>
-            <div class="fgroup"><label>구분 *</label><select id="f-kind" onchange="toggleReceiptField()"><option value="지출">지출</option><option value="입금">입금</option></select></div>
-            <div class="fgroup"><label>계정과목 *</label><select id="f-acct-in"></select></div>
-            <div class="fgroup"><label>거래처</label><input type="text" id="f-vendor" placeholder="거래처명"></div>
-            <div class="fgroup"><label>금액 *</label><input type="number" id="f-amt" placeholder="0"></div>
+            <!-- 날짜 -->
+            <div class="fgroup">
+              <label>날짜 *</label>
+              <input type="date" id="f-date">
+            </div>
+            <!-- 구분 토글 -->
+            <div class="fgroup">
+              <label>구분 * <span class="shortcut-hint">(+입금 / -지출)</span></label>
+              <div class="kind-toggle">
+                <button type="button" class="kind-btn active-exp" id="btn-exp" onclick="setKind('지출')">지출</button>
+                <button type="button" class="kind-btn" id="btn-inc" onclick="setKind('입금')">입금</button>
+              </div>
+              <input type="hidden" id="f-kind" value="지출">
+            </div>
+            <!-- 계정과목 콤보 -->
+            <div class="fgroup">
+              <label>계정과목 * <span class="shortcut-hint">(코드 입력 가능)</span></label>
+              <div class="acct-combo" id="acct-combo">
+                <input type="text" id="f-acct-text" placeholder="코드 또는 이름 검색" autocomplete="off"
+                  oninput="filterAcct(this.value)" onfocus="showAcctDrop()" onblur="setTimeout(hideAcctDrop,200)">
+                <input type="hidden" id="f-acct-code">
+                <div class="acct-dropdown" id="acct-dropdown"></div>
+              </div>
+            </div>
+            <!-- 거래처 -->
+            <div class="fgroup">
+              <label>거래처</label>
+              <input type="text" id="f-vendor" placeholder="거래처명">
+            </div>
+            <!-- 금액 -->
+            <div class="fgroup">
+              <label>금액 *</label>
+              <input type="number" id="f-amt" placeholder="0">
+            </div>
+            <!-- 영수증 -->
             <div class="fgroup" id="receipt-field">
               <label>영수증 (선택)</label>
-              <label class="upload-btn"><i class="ti ti-upload"></i> 파일 선택<input type="file" id="f-receipt" accept="image/*" style="display:none" onchange="previewReceipt(this)"></label>
-              <span id="receipt-name" style="font-size:11px;color:var(--text3)"></span>
+              <div class="upload-area" id="upload-area" onclick="document.getElementById('f-receipt').click()"
+                ondragover="event.preventDefault();this.classList.add('drag')"
+                ondragleave="this.classList.remove('drag')"
+                ondrop="handleDrop(event)">
+                <i class="ti ti-upload" style="font-size:16px"></i>
+                <span id="upload-label">클릭 또는 드래그 (JPG·PNG·PDF)</span>
+              </div>
+              <input type="file" id="f-receipt" accept="image/*,.pdf" style="display:none" onchange="previewReceipt(this)">
+              <div class="receipt-preview" id="receipt-preview" style="display:none">
+                <img id="receipt-img" class="receipt-thumb" src="" alt="영수증" onclick="showReceiptPreview()">
+                <div style="flex:1">
+                  <div id="receipt-filename" style="font-size:11px;color:var(--text2)"></div>
+                  <button type="button" style="font-size:11px;color:var(--c-accent);background:none;border:none;cursor:pointer;padding:0" onclick="clearReceipt()">삭제</button>
+                </div>
+              </div>
             </div>
           </div>
           <div class="fgroup"><label>적요</label><textarea id="f-memo-in" rows="2" placeholder="거래 내용 메모"></textarea></div>
@@ -186,6 +288,7 @@ label.upload-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px
             <button class="btn btn-primary" id="save-btn" onclick="saveEntry()"><i class="ti ti-check"></i> 저장</button>
           </div>
         </div>
+
         <div class="tbl-wrap">
           <table>
             <thead><tr><th>날짜</th><th>구분</th><th>계정과목</th><th>거래처</th><th>적요</th><th style="text-align:right">금액</th><th>영수증</th><th></th></tr></thead>
@@ -196,7 +299,7 @@ label.upload-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px
       </div>
     </div>
 
-    <!-- STATS -->
+    <!-- 통계분석 -->
     <div id="page-stats" class="page">
       <div class="card">
         <div class="card-title"><i class="ti ti-chart-pie"></i> 기간별 통계분석</div>
@@ -211,7 +314,7 @@ label.upload-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px
       </div>
     </div>
 
-    <!-- ALL BRANCH -->
+    <!-- 전분원현황 -->
     <div id="page-allbranch" class="page">
       <div class="card">
         <div class="card-title"><i class="ti ti-layout-grid"></i> 전분원 현황</div>
@@ -226,7 +329,7 @@ label.upload-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px
       </div>
     </div>
 
-    <!-- SUPPLIES -->
+    <!-- 소모품관리 -->
     <div id="page-supplies" class="page">
       <div class="card">
         <div class="card-title"><i class="ti ti-box"></i> 소모품 구매주기 분석</div>
@@ -240,21 +343,18 @@ label.upload-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px
   </div>
 </div>
 
-<button id="chat-fab" onclick="toggleChat()" aria-label="AI 챗봇"><i class="ti ti-message-chatbot"></i></button>
+<!-- 챗봇 -->
+<button id="chat-fab" onclick="toggleChat()"><i class="ti ti-message-chatbot"></i></button>
 <div id="chat-panel" class="hidden">
-  <div id="chat-header">
-    <div class="dot"></div><span>계정과목 AI 도우미</span>
-    <button id="chat-close" onclick="toggleChat()"><i class="ti ti-x"></i></button>
-  </div>
-  <div id="chat-msgs">
-    <div class="msg msg-ai">안녕하세요! 계정과목 분류나 운영비 처리 방법이 궁금하신가요? 무엇이든 물어보세요 😊</div>
-  </div>
+  <div id="chat-header"><div class="dot"></div><span>계정과목 AI 도우미</span><button id="chat-close" onclick="toggleChat()"><i class="ti ti-x"></i></button></div>
+  <div id="chat-msgs"><div class="msg msg-ai">안녕하세요! 계정과목 분류나 운영비 처리 방법이 궁금하신가요? 무엇이든 물어보세요 😊</div></div>
   <div id="chat-input-row">
     <input id="chat-input" type="text" placeholder="질문을 입력하세요..." onkeydown="if(event.key==='Enter')sendChat()">
     <button id="chat-send" onclick="sendChat()"><i class="ti ti-send"></i></button>
   </div>
 </div>
 
+<!-- 영수증 확대 모달 -->
 <div id="modal-overlay" onclick="closeModal()">
   <div id="modal-box" onclick="event.stopPropagation()">
     <div id="modal-content"></div>
@@ -264,11 +364,11 @@ label.upload-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
-const SUPA_URL = 'https://ktizqdrhndefvoeltjko.supabase.co';
-const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt0aXpxZHJobmRlZnZvZWx0amtvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwOTcxOTcsImV4cCI6MjA5MzY3MzE5N30.p3v9VZSgTr_ngL-QN8L_7hoORk1auTqMk8l6NWuE0Yk';
-const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
+const SUPA_URL='https://ktizqdrhndefvoeltjko.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt0aXpxZHJobmRlZnZvZWx0amtvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwOTcxOTcsImV4cCI6MjA5MzY3MzE5N30.p3v9VZSgTr_ngL-QN8L_7hoORk1auTqMk8l6NWuE0Yk';
+const sb=supabase.createClient(SUPA_URL,SUPA_KEY);
 
-const ACCOUNTS = [
+const ACCOUNTS=[
   {code:'801',name:'임원급여'},{code:'802',name:'직원급여'},{code:'803',name:'상여금'},
   {code:'804',name:'제수당'},{code:'805',name:'잡급'},{code:'806',name:'퇴직급여'},
   {code:'811',name:'복리후생비'},{code:'812',name:'여비교통비'},{code:'813',name:'접대비'},
@@ -282,66 +382,180 @@ const ACCOUNTS = [
   {code:'260',name:'단기차입금'},{code:'901',name:'이자수익'},{code:'930',name:'잡이익'},
   {code:'931',name:'이자비용'},{code:'960',name:'잡손실'}
 ];
+const BRANCHES=['남동탄JLS','수원JLS','수원JLS2009','서수원JLS','운정JLS','운정JLS2','테스트JLS'];
+let curUser=null,curBranch=null,allEntries=[],receiptB64=null,receiptMime=null,chatHistory=[];
 
-const BRANCHES = ['남동탄JLS','수원JLS','수원JLS2009','서수원JLS','운정JLS','운정JLS2','테스트JLS'];
+function showLoading(v){document.getElementById('loading-overlay').classList[v?'add':'remove']('show')}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
 
-let curUser = null, curBranch = null, allEntries = [], receiptB64 = null, chatHistory = [];
-
-function showLoading(v){ document.getElementById('loading-overlay').classList[v?'add':'remove']('show') }
-function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200) }
-
+/* ===== 로그인 ===== */
 async function doLogin(){
-  const id = document.getElementById('lid').value.trim();
-  const pw = document.getElementById('lpw').value;
-  if(!id||!pw){ document.getElementById('lerr').textContent='아이디와 비밀번호를 입력하세요'; return }
-  const btn = document.getElementById('login-btn');
-  btn.disabled=true; btn.textContent='로그인 중...';
+  const id=document.getElementById('lid').value.trim();
+  const pw=document.getElementById('lpw').value;
+  if(!id||!pw){document.getElementById('lerr').textContent='아이디와 비밀번호를 입력하세요';return}
+  const btn=document.getElementById('login-btn');
+  btn.disabled=true;btn.textContent='로그인 중...';
   document.getElementById('lerr').textContent='';
-  const {data,error} = await sb.from('users').select('*').eq('id',id).eq('password',pw).single();
-  btn.disabled=false; btn.textContent='로그인';
-  if(error||!data){ document.getElementById('lerr').textContent='아이디 또는 비밀번호가 틀렸습니다'; return }
-  curUser=data; curBranch=data.branches[0];
+  const{data,error}=await sb.from('users').select('*').eq('id',id).eq('password',pw).single();
+  btn.disabled=false;btn.textContent='로그인';
+  if(error||!data){document.getElementById('lerr').textContent='아이디 또는 비밀번호가 틀렸습니다';return}
+  curUser=data;curBranch=data.branches[0];
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app').style.display='flex';
   initApp();
 }
-
 function doLogout(){
-  curUser=null; curBranch=null; allEntries=[];
+  curUser=null;curBranch=null;allEntries=[];
   document.getElementById('login-screen').style.display='flex';
   document.getElementById('app').style.display='none';
-  document.getElementById('lid').value=''; document.getElementById('lpw').value='';
+  document.getElementById('lid').value='';document.getElementById('lpw').value='';
 }
 
+/* ===== 비밀번호 변경 ===== */
+function showPw(){document.getElementById('pw-overlay').classList.add('open');document.getElementById('pw-cur').value='';document.getElementById('pw-new').value='';document.getElementById('pw-new2').value='';document.getElementById('pw-err').textContent=''}
+function closePw(){document.getElementById('pw-overlay').classList.remove('open')}
+async function changePw(){
+  const cur=document.getElementById('pw-cur').value;
+  const nw=document.getElementById('pw-new').value;
+  const nw2=document.getElementById('pw-new2').value;
+  const err=document.getElementById('pw-err');
+  if(!cur||!nw||!nw2){err.textContent='모든 항목을 입력하세요';return}
+  if(nw!==nw2){err.textContent='새 비밀번호가 일치하지 않습니다';return}
+  if(nw.length<4){err.textContent='비밀번호는 4자 이상이어야 합니다';return}
+  if(cur!==curUser.password){err.textContent='현재 비밀번호가 틀렸습니다';return}
+  showLoading(true);
+  const{error}=await sb.from('users').update({password:nw}).eq('id',curUser.id);
+  showLoading(false);
+  if(error){err.textContent='변경 오류: '+error.message;return}
+  curUser.password=nw;
+  toast('비밀번호가 변경되었습니다');
+  closePw();
+}
+
+/* ===== 초기화 ===== */
 function initApp(){
-  const rb = document.getElementById('role-badge');
-  rb.textContent = {super:'수퍼바이저',visor:'바이저',user:'사용자'}[curUser.role]||'';
-  const sel = document.getElementById('branch-sel');
-  sel.innerHTML = curUser.branches.map(b=>`<option value="${b}">${b}</option>`).join('');
-  sel.value = curBranch;
+  const rb=document.getElementById('role-badge');
+  rb.textContent={super:'수퍼바이저',visor:'바이저',user:'사용자'}[curUser.role]||'';
+  const sel=document.getElementById('branch-sel');
+  sel.innerHTML=curUser.branches.map(b=>`<option value="${b}">${b}</option>`).join('');
+  sel.value=curBranch;
   if(curUser.role!=='user') document.getElementById('tab-allbranch').style.display='flex';
-  populateSelects();
-  initDates();
-  loadEntries();
+  initDates();loadEntries();
+  // 단축키 등록
+  document.addEventListener('keydown',globalKey);
 }
-
+function globalKey(e){
+  const tag=document.activeElement.tagName;
+  if(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT') return;
+  if(e.key==='+'){e.preventDefault();const f=document.getElementById('add-form');if(f.style.display==='none')toggleForm();setKind('입금')}
+  if(e.key==='-'){e.preventDefault();const f=document.getElementById('add-form');if(f.style.display==='none')toggleForm();setKind('지출')}
+}
 function initDates(){
-  const now=new Date(), y=now.getFullYear(), m=String(now.getMonth()+1).padStart(2,'0');
+  const now=new Date(),y=now.getFullYear(),m=String(now.getMonth()+1).padStart(2,'0');
   const last=new Date(y,now.getMonth()+1,0).getDate().toString().padStart(2,'0');
-  const first=`${y}-${m}-01`, end=`${y}-${m}-${last}`;
-  ['f-from','s-from','ab-from'].forEach(id=>{ const el=document.getElementById(id); if(el)el.value=first });
-  ['f-to','s-to','ab-to'].forEach(id=>{ const el=document.getElementById(id); if(el)el.value=end });
+  const first=`${y}-${m}-01`,end=`${y}-${m}-${last}`;
+  ['f-from','s-from','ab-from'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=first});
+  ['f-to','s-to','ab-to'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=end});
   document.getElementById('f-date').value=now.toISOString().split('T')[0];
 }
+function changeBranch(b){curBranch=b;loadEntries()}
 
-function populateSelects(){
-  const opts = ACCOUNTS.map(a=>`<option value="${a.code}">${a.code} ${a.name}</option>`).join('');
-  document.getElementById('f-acct-in').innerHTML = opts;
-  document.getElementById('f-acct').innerHTML = '<option value="">계정 전체</option>'+opts;
+/* ===== 구분 토글 ===== */
+function setKind(kind){
+  document.getElementById('f-kind').value=kind;
+  const be=document.getElementById('btn-exp'),bi=document.getElementById('btn-inc');
+  be.className='kind-btn'+(kind==='지출'?' active-exp':'');
+  bi.className='kind-btn'+(kind==='입금'?' active-inc':'');
+  document.getElementById('receipt-field').style.display=kind==='지출'?'flex':'none';
 }
 
-function changeBranch(b){ curBranch=b; loadEntries() }
+/* ===== 계정과목 콤보 ===== */
+function filterAcct(val){
+  const dd=document.getElementById('acct-dropdown');
+  const v=val.trim().toLowerCase();
+  const filtered=v?ACCOUNTS.filter(a=>a.code.startsWith(v)||a.name.includes(v)):ACCOUNTS;
+  dd.innerHTML=filtered.map(a=>`<div class="acct-option" onmousedown="selectAcct('${a.code}','${a.name}')"><span class="code">${a.code}</span><span>${a.name}</span></div>`).join('');
+  dd.classList.toggle('show',filtered.length>0);
+}
+function selectAcct(code,name){
+  document.getElementById('f-acct-text').value=code+' '+name;
+  document.getElementById('f-acct-code').value=code;
+  document.getElementById('acct-dropdown').classList.remove('show');
+}
+function showAcctDrop(){filterAcct(document.getElementById('f-acct-text').value)}
+function hideAcctDrop(){document.getElementById('acct-dropdown').classList.remove('show')}
 
+function populateFilterSelect(){
+  const opts=ACCOUNTS.map(a=>`<option value="${a.code}">${a.code} ${a.name}</option>`).join('');
+  document.getElementById('f-acct').innerHTML='<option value="">계정 전체</option>'+opts;
+}
+
+/* ===== 영수증 ===== */
+function handleDrop(e){
+  e.preventDefault();
+  document.getElementById('upload-area').classList.remove('drag');
+  const file=e.dataTransfer.files[0];
+  if(file) processFile(file);
+}
+function previewReceipt(inp){
+  const file=inp.files[0];if(!file)return;
+  processFile(file);
+}
+function processFile(file){
+  if(file.size>5*1024*1024){toast('5MB 이하 파일만 첨부 가능합니다');return}
+  const allowed=['image/jpeg','image/png','image/gif','image/webp','application/pdf'];
+  if(!allowed.includes(file.type)){toast('JPG·PNG·PDF 파일만 가능합니다');return}
+  const reader=new FileReader();
+  reader.onload=e=>{
+    receiptB64=e.target.result;
+    receiptMime=file.type;
+    document.getElementById('upload-label').textContent=file.name;
+    document.getElementById('upload-area').classList.add('has-file');
+    if(file.type.startsWith('image/')){
+      document.getElementById('receipt-img').src=receiptB64;
+      document.getElementById('receipt-preview').style.display='flex';
+    } else {
+      document.getElementById('receipt-img').src='';
+      document.getElementById('receipt-preview').style.display='none';
+    }
+    document.getElementById('receipt-filename').textContent=file.name;
+  };
+  reader.readAsDataURL(file);
+}
+function clearReceipt(){
+  receiptB64=null;receiptMime=null;
+  document.getElementById('f-receipt').value='';
+  document.getElementById('upload-label').textContent='클릭 또는 드래그 (JPG·PNG·PDF)';
+  document.getElementById('upload-area').classList.remove('has-file');
+  document.getElementById('receipt-preview').style.display='none';
+}
+function showReceiptPreview(){
+  const src=document.getElementById('receipt-img').src;
+  document.getElementById('modal-content').innerHTML=`<img src="${src}" alt="영수증">`;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+/* ===== 폼 토글 ===== */
+function toggleForm(){
+  const f=document.getElementById('add-form');
+  const open=f.style.display==='none';
+  f.style.display=open?'block':'none';
+  if(open){
+    clearReceipt();
+    document.getElementById('f-date').value=new Date().toISOString().split('T')[0];
+    document.getElementById('f-amt').value='';
+    document.getElementById('f-memo-in').value='';
+    document.getElementById('f-vendor').value='';
+    document.getElementById('f-acct-text').value='';
+    document.getElementById('f-acct-code').value='';
+    setKind('지출');
+    populateFilterSelect();
+    filterAcct('');
+    setTimeout(()=>document.getElementById('f-date').focus(),100);
+  }
+}
+
+/* ===== 데이터 로드 ===== */
 async function loadEntries(){
   showLoading(true);
   const from=document.getElementById('f-from')?.value;
@@ -353,19 +567,17 @@ async function loadEntries(){
   if(to) q=q.lte('date',to);
   if(type) q=q.eq('kind',type);
   if(acct) q=q.eq('code',acct);
-  const {data,error}=await q;
+  const{data,error}=await q;
   showLoading(false);
-  if(error){ toast('데이터 로드 오류: '+error.message); return }
+  if(error){toast('데이터 로드 오류: '+error.message);return}
   allEntries=data||[];
   filterLocal();
 }
-
 function filterLocal(){
   const memo=document.getElementById('f-memo')?.value?.toLowerCase()||'';
   const filtered=memo?allEntries.filter(e=>(e.memo||'').toLowerCase().includes(memo)||(e.acct||'').includes(memo)||(e.vendor||'').toLowerCase().includes(memo)):allEntries;
   renderLedger(filtered);
 }
-
 function renderLedger(data){
   if(!data) data=allEntries;
   const totalExp=data.filter(e=>e.kind==='지출').reduce((s,e)=>s+e.amt,0);
@@ -380,6 +592,12 @@ function renderLedger(data){
   document.getElementById('ledger-empty').style.display=data.length?'none':'block';
   data.forEach(e=>{
     const tr=document.createElement('tr');
+    const isPdf=e.receipt_url&&e.receipt_url.startsWith('data:application/pdf');
+    const receiptCell=e.receipt_url
+      ?(isPdf
+        ?`<span style="font-size:11px;color:var(--c-primary);cursor:pointer" onclick="showReceiptModal('${e.id}')"><i class="ti ti-file-type-pdf"></i> PDF</span>`
+        :`<img src="${e.receipt_url}" class="receipt-thumb" onclick="showReceiptModal('${e.id}')" alt="영수증">`)
+      :'<div class="receipt-placeholder"><i class="ti ti-photo-off" style="font-size:16px"></i></div>';
     tr.innerHTML=`
       <td>${e.date}</td>
       <td><span class="tag ${e.kind==='지출'?'tag-exp':'tag-inc'}">${e.kind}</span></td>
@@ -387,82 +605,63 @@ function renderLedger(data){
       <td>${e.vendor||'-'}</td>
       <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${e.memo||''}">${e.memo||'-'}</td>
       <td class="${e.kind==='지출'?'amt-exp':'amt-inc'}" style="text-align:right">${e.kind==='지출'?'-':'+'}<b>${e.amt.toLocaleString()}</b></td>
-      <td>${e.receipt_url?`<img src="${e.receipt_url}" class="receipt-thumb" onclick="showReceipt('${e.receipt_url}','${e.date}','${e.acct}')" alt="영수증">`:'<div class="receipt-placeholder"><i class="ti ti-photo-off" style="font-size:16px"></i></div>'}</td>
+      <td>${receiptCell}</td>
       <td><button class="btn btn-ghost btn-sm" onclick="deleteEntry(${e.id})" style="padding:4px 8px;font-size:11px"><i class="ti ti-trash"></i></button></td>`;
     tbody.appendChild(tr);
   });
 }
-
+function showReceiptModal(id){
+  const e=allEntries.find(x=>x.id==id);
+  if(!e||!e.receipt_url)return;
+  const isPdf=e.receipt_url.startsWith('data:application/pdf');
+  document.getElementById('modal-content').innerHTML=`
+    <p style="font-size:12px;color:var(--text3);margin-bottom:8px">${e.date} · ${e.acct}</p>
+    ${isPdf?`<p style="font-size:13px">PDF 파일은 <a href="${e.receipt_url}" target="_blank" style="color:var(--c-primary)">여기서 열기</a></p>`:`<img src="${e.receipt_url}" alt="영수증">`}`;
+  document.getElementById('modal-overlay').classList.add('open');
+}
 function clearFilter(){
   ['f-type','f-acct'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('f-memo').value='';
-  initDates(); loadEntries();
+  initDates();loadEntries();
 }
 
-function toggleForm(){
-  const f=document.getElementById('add-form');
-  const open=f.style.display==='none';
-  f.style.display=open?'block':'none';
-  if(open){
-    receiptB64=null;
-    document.getElementById('receipt-name').textContent='';
-    document.getElementById('f-date').value=new Date().toISOString().split('T')[0];
-    document.getElementById('f-amt').value='';
-    document.getElementById('f-memo-in').value='';
-    document.getElementById('f-vendor').value='';
-  }
-}
-
-function toggleReceiptField(){
-  document.getElementById('receipt-field').style.display=document.getElementById('f-kind').value==='지출'?'flex':'none';
-}
-
-function previewReceipt(inp){
-  const file=inp.files[0]; if(!file)return;
-  if(file.size>3*1024*1024){ toast('3MB 이하 이미지만 첨부 가능합니다'); inp.value=''; return }
-  const reader=new FileReader();
-  reader.onload=e=>{ receiptB64=e.target.result; document.getElementById('receipt-name').textContent=file.name };
-  reader.readAsDataURL(file);
-}
-
+/* ===== 저장/삭제 ===== */
 async function saveEntry(){
   const date=document.getElementById('f-date').value;
   const kind=document.getElementById('f-kind').value;
-  const sel=document.getElementById('f-acct-in');
-  const code=sel.value;
+  const code=document.getElementById('f-acct-code').value;
   const acct=ACCOUNTS.find(a=>a.code===code)?.name||'';
   const vendor=document.getElementById('f-vendor').value.trim();
   const amt=parseInt(document.getElementById('f-amt').value)||0;
   const memo=document.getElementById('f-memo-in').value.trim();
-  if(!date||!code||amt<=0){ toast('날짜, 계정과목, 금액은 필수입니다'); return }
+  if(!date||!code){toast('날짜와 계정과목은 필수입니다');return}
+  if(amt<=0){toast('금액을 입력하세요');return}
   const btn=document.getElementById('save-btn');
-  btn.disabled=true; showLoading(true);
-  const {error}=await sb.from('entries').insert({branch:curBranch,date,kind,code,acct,vendor,memo,amt,receipt_url:receiptB64});
-  btn.disabled=false; showLoading(false);
-  if(error){ toast('저장 오류: '+error.message); return }
-  toast('저장되었습니다'); toggleForm(); loadEntries();
+  btn.disabled=true;showLoading(true);
+  const{error}=await sb.from('entries').insert({branch:curBranch,date,kind,code,acct,vendor,memo,amt,receipt_url:receiptB64});
+  btn.disabled=false;showLoading(false);
+  if(error){toast('저장 오류: '+error.message);return}
+  toast('저장되었습니다');toggleForm();loadEntries();
 }
-
 async function deleteEntry(id){
   if(!confirm('삭제하시겠습니까?'))return;
   showLoading(true);
-  const {error}=await sb.from('entries').delete().eq('id',id);
+  const{error}=await sb.from('entries').delete().eq('id',id);
   showLoading(false);
-  if(error){ toast('삭제 오류: '+error.message); return }
-  toast('삭제되었습니다'); loadEntries();
+  if(error){toast('삭제 오류: '+error.message);return}
+  toast('삭제되었습니다');loadEntries();
 }
 
-function showReceipt(url,date,acct){
-  document.getElementById('modal-content').innerHTML=`<p style="font-size:12px;color:var(--text3);margin-bottom:8px">${date} · ${acct}</p><img src="${url}" alt="영수증">`;
-  document.getElementById('modal-overlay').classList.add('open');
-}
-function closeModal(){ document.getElementById('modal-overlay').classList.remove('open') }
+/* ===== 모달 ===== */
+function closeModal(){document.getElementById('modal-overlay').classList.remove('open')}
+document.getElementById('modal-overlay').addEventListener('click',function(e){if(e.target===this)closeModal()});
 
+/* ===== 통계 ===== */
 async function loadStats(){
   const from=document.getElementById('s-from')?.value;
   const to=document.getElementById('s-to')?.value;
   showLoading(true);
-  const {data}=await sb.from('entries').select('*').eq('branch',curBranch).gte('date',from).lte('date',to);
+  const{data}=await sb.from('entries').select('*').eq('branch',curBranch).gte('date',from).lte('date',to);
   showLoading(false);
   const entries=data||[];
   const totalExp=entries.filter(e=>e.kind==='지출').reduce((s,e)=>s+e.amt,0);
@@ -473,7 +672,7 @@ async function loadStats(){
     <div class="stat"><div class="stat-label">지출 건수</div><div class="stat-val">${entries.filter(e=>e.kind==='지출').length}건</div></div>
     <div class="stat"><div class="stat-label">입금 건수</div><div class="stat-val">${entries.filter(e=>e.kind==='입금').length}건</div></div>`;
   const byAcct={};
-  entries.filter(e=>e.kind==='지출').forEach(e=>{ byAcct[e.acct]=(byAcct[e.acct]||0)+e.amt });
+  entries.filter(e=>e.kind==='지출').forEach(e=>{byAcct[e.acct]=(byAcct[e.acct]||0)+e.amt});
   const sorted=Object.entries(byAcct).sort((a,b)=>b[1]-a[1]).slice(0,10);
   const maxVal=sorted[0]?sorted[0][1]:1;
   const colors=['#185FA5','#1D9E75','#BA7517','#A32D2D','#534AB7','#0F6E56','#D85A30','#3B6D11','#854F0B','#993556'];
@@ -488,12 +687,13 @@ async function loadStats(){
       ${sorted.length===0?'<div class="empty">데이터 없음</div>':''}</div>`;
 }
 
+/* ===== 전분원 ===== */
 async function loadAllBranch(){
   if(curUser.role==='user')return;
   const from=document.getElementById('ab-from')?.value;
   const to=document.getElementById('ab-to')?.value;
   showLoading(true);
-  const {data}=await sb.from('entries').select('*').gte('date',from).lte('date',to);
+  const{data}=await sb.from('entries').select('*').gte('date',from).lte('date',to);
   showLoading(false);
   const all=data||[];
   document.getElementById('allbranch-content').innerHTML=BRANCHES.map(b=>{
@@ -512,32 +712,30 @@ async function loadAllBranch(){
   }).join('');
 }
 
+/* ===== 소모품 ===== */
 async function loadSupplies(){
-  const {data:supplies}=await sb.from('supplies').select('*').eq('branch',curBranch).order('created_at');
-  const {data:ents}=await sb.from('entries').select('*').eq('branch',curBranch).eq('kind','지출');
-  renderSupplies(supplies||[], ents||[]);
+  const{data:supplies}=await sb.from('supplies').select('*').eq('branch',curBranch).order('created_at');
+  const{data:ents}=await sb.from('entries').select('*').eq('branch',curBranch).eq('kind','지출');
+  renderSupplies(supplies||[],ents||[]);
 }
-
-function renderSupplies(supplies, entries){
+function renderSupplies(supplies,entries){
   const el=document.getElementById('supply-list');
-  if(supplies.length===0){ el.innerHTML='<div class="empty"><i class="ti ti-box"></i>소모품을 추가해주세요</div>'; return }
+  if(supplies.length===0){el.innerHTML='<div class="empty"><i class="ti ti-box"></i>소모품을 추가해주세요</div>';return}
   el.innerHTML=supplies.map(s=>{
     const purchases=entries.filter(e=>(e.memo||'').includes(s.name)).sort((a,b)=>a.date.localeCompare(b.date));
-    let cycleHtml='', statusClass='cycle-ok', statusText='정상';
+    let cycleHtml='',statusClass='cycle-ok',statusText='정상';
     if(purchases.length>=2){
       const gaps=[];
-      for(let i=1;i<purchases.length;i++){
-        gaps.push(Math.round((new Date(purchases[i].date)-new Date(purchases[i-1].date))/86400000));
-      }
+      for(let i=1;i<purchases.length;i++) gaps.push(Math.round((new Date(purchases[i].date)-new Date(purchases[i-1].date))/86400000));
       const avgGap=Math.round(gaps.reduce((a,b)=>a+b,0)/gaps.length);
       const daysSince=Math.round((Date.now()-new Date(purchases[purchases.length-1].date))/86400000);
       const ratio=daysSince/avgGap;
-      if(ratio>1.3){ statusClass='cycle-over'; statusText='구매필요' }
-      else if(ratio>0.8){ statusClass='cycle-warn'; statusText='검토필요' }
+      if(ratio>1.3){statusClass='cycle-over';statusText='구매필요'}
+      else if(ratio>0.8){statusClass='cycle-warn';statusText='검토필요'}
       cycleHtml=`평균 ${avgGap}일 주기 · ${daysSince}일 경과 · 총 ${purchases.length}회 구매`;
-    } else {
+    }else{
       cycleHtml=`구매이력 ${purchases.length}건 (분석 위해 2건 이상 필요)`;
-      statusClass='cycle-warn'; statusText='데이터부족';
+      statusClass='cycle-warn';statusText='데이터부족';
     }
     return `<div class="supply-item">
       <div style="flex:1">
@@ -549,25 +747,24 @@ function renderSupplies(supplies, entries){
     </div>`;
   }).join('');
 }
-
 async function showAddSupply(){
-  const name=prompt('소모품 이름 (예: A4용지)'); if(!name)return;
-  const unit=prompt('구매 단위 (예: 박스, 개, 묶음)','개'); if(!unit)return;
+  const name=prompt('소모품 이름 (예: A4용지)');if(!name)return;
+  const unit=prompt('구매 단위 (예: 박스, 개, 묶음)','개');if(!unit)return;
   showLoading(true);
-  const {error}=await sb.from('supplies').insert({branch:curBranch,name:name.trim(),unit:unit.trim()});
+  const{error}=await sb.from('supplies').insert({branch:curBranch,name:name.trim(),unit:unit.trim()});
   showLoading(false);
-  if(error){ toast('오류: '+error.message); return }
-  toast('추가되었습니다'); loadSupplies();
+  if(error){toast('오류: '+error.message);return}
+  toast('추가되었습니다');loadSupplies();
 }
-
 async function deleteSupply(id){
   if(!confirm('삭제하시겠습니까?'))return;
   showLoading(true);
   await sb.from('supplies').delete().eq('id',id);
   showLoading(false);
-  toast('삭제되었습니다'); loadSupplies();
+  toast('삭제되었습니다');loadSupplies();
 }
 
+/* ===== 엑셀 ===== */
 function exportExcel(){
   const memo=document.getElementById('f-memo')?.value?.toLowerCase()||'';
   const data=memo?allEntries.filter(e=>(e.memo||'').toLowerCase().includes(memo)):allEntries;
@@ -576,25 +773,23 @@ function exportExcel(){
   const csv=[headers,...rows].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
   const a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));
-  a.download=`${curBranch}_거래내역_${new Date().toISOString().split('T')[0]}.csv`;
-  a.click();
+  a.download=`${curBranch}_거래내역_${new Date().toISOString().split('T')[0]}.csv`;a.click();
 }
-
 async function exportAllExcel(){
   const from=document.getElementById('ab-from')?.value;
   const to=document.getElementById('ab-to')?.value;
   showLoading(true);
-  const {data}=await sb.from('entries').select('*').gte('date',from).lte('date',to);
+  const{data}=await sb.from('entries').select('*').gte('date',from).lte('date',to);
   showLoading(false);
   const headers=['분원','날짜','구분','코드','계정과목','거래처','적요','금액'];
   const rows=(data||[]).map(e=>[e.branch,e.date,e.kind,e.code,e.acct,e.vendor||'',e.memo||'',e.amt]);
   const csv=[headers,...rows].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
   const a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));
-  a.download=`전분원_거래내역_${new Date().toISOString().split('T')[0]}.csv`;
-  a.click();
+  a.download=`전분원_거래내역_${new Date().toISOString().split('T')[0]}.csv`;a.click();
 }
 
+/* ===== 페이지 전환 ===== */
 function showPage(name,tab){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
@@ -605,34 +800,29 @@ function showPage(name,tab){
   if(name==='supplies') loadSupplies();
 }
 
-function toggleChat(){ document.getElementById('chat-panel').classList.toggle('hidden') }
-
+/* ===== 챗봇 ===== */
+function toggleChat(){document.getElementById('chat-panel').classList.toggle('hidden')}
 async function sendChat(){
   const inp=document.getElementById('chat-input');
-  const msg=inp.value.trim(); if(!msg)return;
-  inp.value=''; addMsg(msg,'user');
+  const msg=inp.value.trim();if(!msg)return;
+  inp.value='';addMsg(msg,'user');
   const typing=addMsg('입력 중...','ai',true);
   chatHistory.push({role:'user',content:msg});
   try{
-    const res=await fetch('/api/chat',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({messages:chatHistory})
-    });
+    const res=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:chatHistory})});
     const d=await res.json();
     const reply=d.text||d.error||'죄송합니다, 오류가 발생했습니다.';
-    typing.remove(); addMsg(reply,'ai');
+    typing.remove();addMsg(reply,'ai');
     chatHistory.push({role:'assistant',content:reply});
     if(chatHistory.length>20) chatHistory=chatHistory.slice(-20);
-  } catch{ typing.remove(); addMsg('네트워크 오류가 발생했습니다.','ai') }
+  }catch{typing.remove();addMsg('네트워크 오류가 발생했습니다.','ai')}
 }
-
 function addMsg(text,who,returnEl=false){
   const el=document.createElement('div');
-  el.className=`msg msg-${who}`; el.textContent=text;
+  el.className=`msg msg-${who}`;el.textContent=text;
   const msgs=document.getElementById('chat-msgs');
-  msgs.appendChild(el); msgs.scrollTop=msgs.scrollHeight;
-  if(returnEl) return el;
+  msgs.appendChild(el);msgs.scrollTop=msgs.scrollHeight;
+  if(returnEl)return el;
 }
 </script>
 </body>
