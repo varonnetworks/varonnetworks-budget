@@ -16,8 +16,6 @@
   --sidebar:220px;--radius:10px;--shadow:0 1px 4px rgba(0,0,0,0.08);
 }
 body{font-family:'Apple SD Gothic Neo','Pretendard',sans-serif;background:var(--bg);color:var(--text);font-size:14px;min-height:100vh}
-
-/* 레이아웃 */
 #layout{display:flex;min-height:100vh}
 #sidebar{width:var(--sidebar);background:#fff;border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:90;overflow-y:auto}
 #sidebar-top{padding:16px;border-bottom:1px solid var(--border)}
@@ -33,16 +31,12 @@ body{font-family:'Apple SD Gothic Neo','Pretendard',sans-serif;background:var(--
 #sidebar-bottom{padding:10px;border-top:1px solid var(--border)}
 .sidebar-btn{display:flex;align-items:center;gap:7px;width:100%;padding:8px 10px;border-radius:7px;font-size:12px;color:var(--text2);background:none;border:none;cursor:pointer;transition:background 0.15s}
 .sidebar-btn:hover{background:#F0F4FA}
-
-/* 바로가기 위젯 */
 #shortcuts-box{padding:10px;border-top:1px solid var(--border)}
 .shortcuts-title{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between}
-.shortcut-link{display:flex;align-items:center;gap:7px;padding:6px 8px;border-radius:7px;font-size:12px;color:var(--text2);text-decoration:none;transition:background 0.15s;cursor:pointer;border:none;background:none;width:100%;text-align:left}
+.shortcut-link{display:flex;align-items:center;gap:7px;padding:6px 8px;border-radius:7px;font-size:12px;color:var(--text2);text-decoration:none;transition:background 0.15s;width:100%;text-align:left;border:none;background:none;cursor:pointer}
 .shortcut-link:hover{background:#F0F4FA;color:var(--c-primary)}
 .shortcut-link i{font-size:14px;color:var(--text3)}
 .add-shortcut{font-size:11px;color:var(--c-primary);background:none;border:none;cursor:pointer;padding:2px 4px}
-
-/* 메인 */
 #content{margin-left:var(--sidebar);flex:1;padding:1.5rem;max-width:calc(100vw - var(--sidebar))}
 .page{display:none}.page.active{display:block}
 .page-header{font-size:18px;font-weight:700;margin-bottom:1rem;display:flex;align-items:center;gap:8px}
@@ -68,14 +62,25 @@ td.amt-inc{color:var(--c-income);font-weight:600}
 .btn-primary{background:var(--c-primary);color:#fff}.btn-ghost{background:#fff;color:var(--text);border:1px solid var(--border)}
 .btn:hover{opacity:0.85}.btn:disabled{opacity:0.5;cursor:not-allowed}
 .btn-sm{padding:6px 12px;font-size:12px}
-.inline-form{background:#F0F7FF;border:1.5px dashed var(--c-primary);border-radius:10px;padding:1rem;margin-bottom:1rem}
+/* 폼 + 참조표 레이아웃 */
+.form-with-ref{display:grid;grid-template-columns:1fr 280px;gap:16px;align-items:start}
+.inline-form{background:#F0F7FF;border:1.5px dashed var(--c-primary);border-radius:10px;padding:1rem}
+.ref-table-box{background:#fff;border:1px solid var(--border);border-radius:10px;padding:12px;font-size:11px;position:sticky;top:100px}
+.ref-table-box .ref-title{font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px;display:flex;align-items:center;gap:5px}
+.ref-tbl{width:100%;border-collapse:collapse}
+.ref-tbl th{background:#F0F4FA;padding:5px 7px;font-size:10px;font-weight:700;color:var(--text2);text-align:left;border-bottom:1px solid var(--border)}
+.ref-tbl td{padding:5px 7px;border-bottom:1px solid rgba(0,0,0,0.04);vertical-align:top;line-height:1.4}
+.ref-tbl td:first-child{font-weight:700;color:var(--c-primary);white-space:nowrap;width:28px}
+.ref-tbl td:nth-child(2){font-weight:600;color:var(--text);white-space:nowrap;width:72px}
+.ref-tbl td:last-child{color:var(--text3);font-size:10px}
+.ref-tbl tr:last-child td{border-bottom:none}
 .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:10px}
 .fgroup{display:flex;flex-direction:column;gap:4px}
 .fgroup label{font-size:11px;color:var(--text2);font-weight:600}
 .fgroup input,.fgroup select,.fgroup textarea{border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:13px;background:#fff;color:var(--text);outline:none;width:100%}
 .fgroup input:focus,.fgroup select:focus,.fgroup textarea:focus{border-color:var(--c-primary)}
 .form-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:10px}
-.kind-toggle{display:flex;gap:0;border-radius:7px;overflow:hidden;border:1px solid var(--border)}
+.kind-toggle{display:flex;border-radius:7px;overflow:hidden;border:1px solid var(--border)}
 .kind-btn{flex:1;padding:7px 12px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:#fff;color:var(--text2);transition:all 0.15s}
 .kind-btn.active-exp{background:var(--c-expense);color:#fff}
 .kind-btn.active-inc{background:var(--c-income);color:#fff}
@@ -88,9 +93,7 @@ td.amt-inc{color:var(--c-income);font-weight:600}
 .acct-option .code{color:var(--c-primary);font-weight:700;width:32px;flex-shrink:0}
 .upload-area{border:1.5px dashed var(--border);border-radius:8px;padding:10px 14px;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2);transition:border-color 0.15s}
 .upload-area:hover{border-color:var(--c-primary)}
-.upload-area.has-file{border-color:var(--c-income);background:#f0fdf410}
-.receipt-thumb{width:48px;height:48px;border-radius:6px;object-fit:cover;cursor:pointer;border:1px solid var(--border)}
-.receipt-placeholder{width:36px;height:36px;border-radius:6px;background:#F0F4FA;display:flex;align-items:center;justify-content:center;color:var(--text3)}
+.upload-area.has-file{border-color:var(--c-income)}
 .shortcut-hint{font-size:10px;color:var(--text3);margin-top:3px}
 .chart-bar-wrap{margin-top:8px}
 .bar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
@@ -103,6 +106,9 @@ td.amt-inc{color:var(--c-income);font-weight:600}
 .supply-meta{font-size:11px;color:var(--text3);margin-top:3px}
 .cycle-badge{font-size:11px;padding:3px 9px;border-radius:10px;font-weight:600;white-space:nowrap}
 .cycle-ok{background:#E1F5EE;color:#0F6E56}.cycle-warn{background:#FAEEDA;color:#854F0B}.cycle-over{background:#FCEBEB;color:#A32D2D}
+.supply-tabs{display:flex;border-radius:8px;overflow:hidden;border:1px solid var(--border);margin-bottom:1rem;width:fit-content}
+.supply-tab{padding:7px 16px;font-size:12px;font-weight:600;cursor:pointer;background:#fff;color:var(--text2);border:none;transition:all 0.15s}
+.supply-tab.active{background:var(--c-primary);color:#fff}
 #chat-fab{position:fixed;bottom:20px;right:20px;width:50px;height:50px;border-radius:50%;background:var(--c-primary);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 4px 16px rgba(27,94,171,0.4);z-index:200;transition:transform 0.2s}
 #chat-fab:hover{transform:scale(1.1)}
 #chat-panel{position:fixed;bottom:80px;right:20px;width:320px;max-height:480px;background:#fff;border:1px solid var(--border);border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,0.15);z-index:200;display:flex;flex-direction:column;overflow:hidden}
@@ -147,10 +153,11 @@ td.amt-inc{color:var(--c-income);font-weight:600}
 #toast.show{opacity:1}
 .empty{text-align:center;padding:2rem;color:var(--text3);font-size:13px}
 .empty i{font-size:36px;display:block;margin-bottom:8px}
-/* 소모품 탭 */
-.supply-tabs{display:flex;gap:0;border-radius:8px;overflow:hidden;border:1px solid var(--border);margin-bottom:1rem;width:fit-content}
-.supply-tab{padding:7px 16px;font-size:12px;font-weight:600;cursor:pointer;background:#fff;color:var(--text2);border:none;transition:all 0.15s}
-.supply-tab.active{background:var(--c-primary);color:#fff}
+#mobile-menu{display:none;position:fixed;top:10px;left:10px;z-index:100;background:var(--c-primary);color:#fff;border:none;border-radius:8px;padding:8px 10px;cursor:pointer;font-size:18px}
+@media(max-width:900px){
+  .form-with-ref{grid-template-columns:1fr}
+  .ref-table-box{display:none}
+}
 @media(max-width:768px){
   #sidebar{transform:translateX(-100%);transition:transform 0.3s}
   #sidebar.open{transform:translateX(0)}
@@ -159,7 +166,6 @@ td.amt-inc{color:var(--c-income);font-weight:600}
   #chat-panel{width:calc(100vw - 32px);right:16px}
   #mobile-menu{display:flex}
 }
-#mobile-menu{display:none;position:fixed;top:10px;left:10px;z-index:100;background:var(--c-primary);color:#fff;border:none;border-radius:8px;padding:8px 10px;cursor:pointer;font-size:18px}
 </style>
 </head>
 <body>
@@ -168,10 +174,9 @@ td.amt-inc{color:var(--c-income);font-weight:600}
 <div id="toast"></div>
 <button id="mobile-menu" onclick="toggleSidebar()"><i class="ti ti-menu-2"></i></button>
 
-<!-- 로그인 -->
 <div id="login-screen">
   <div class="login-card">
-    <div class="login-logo"><i class="ti ti-building-school" style="color:var(--c-accent)"></i> JLS 운영비 관리</div>
+    <div class="login-logo"><i class="ti ti-building-school" style="color:var(--c-accent)"></i> JLS 운영비 관리 1.0</div>
     <div class="login-sub">계정을 입력하여 로그인하세요</div>
     <div class="login-field"><label>아이디</label><input id="lid" type="text" placeholder="아이디"/></div>
     <div class="login-field"><label>비밀번호</label><input id="lpw" type="password" placeholder="비밀번호" onkeydown="if(event.key==='Enter')doLogin()"/></div>
@@ -180,19 +185,17 @@ td.amt-inc{color:var(--c-income);font-weight:600}
   </div>
 </div>
 
-<!-- 비밀번호 변경 -->
 <div id="pw-overlay" onclick="if(event.target===this)closePw()">
   <div id="pw-box">
     <h3><i class="ti ti-key" style="color:var(--c-primary)"></i> 비밀번호 변경</h3>
-    <div class="fgroup" style="margin-bottom:10px"><label>현재 비밀번호</label><input type="password" id="pw-cur" placeholder="현재 비밀번호"></div>
-    <div class="fgroup" style="margin-bottom:10px"><label>새 비밀번호</label><input type="password" id="pw-new" placeholder="새 비밀번호"></div>
-    <div class="fgroup" style="margin-bottom:14px"><label>새 비밀번호 확인</label><input type="password" id="pw-new2" placeholder="새 비밀번호 재입력"></div>
+    <div class="fgroup" style="margin-bottom:10px"><label>현재 비밀번호</label><input type="password" id="pw-cur"></div>
+    <div class="fgroup" style="margin-bottom:10px"><label>새 비밀번호</label><input type="password" id="pw-new"></div>
+    <div class="fgroup" style="margin-bottom:14px"><label>새 비밀번호 확인</label><input type="password" id="pw-new2"></div>
     <div id="pw-err" style="color:var(--c-accent);font-size:12px;min-height:16px;margin-bottom:10px"></div>
     <div class="form-actions"><button class="btn btn-ghost" onclick="closePw()">취소</button><button class="btn btn-primary" onclick="changePw()">변경</button></div>
   </div>
 </div>
 
-<!-- 바로가기 편집 -->
 <div id="sc-overlay" onclick="if(event.target===this)closeScEdit()">
   <div id="sc-box">
     <h3><i class="ti ti-link" style="color:var(--c-primary)"></i> 바로가기 편집</h3>
@@ -207,7 +210,6 @@ td.amt-inc{color:var(--c-income);font-weight:600}
   </div>
 </div>
 
-<!-- 영수증 확대 -->
 <div id="modal-overlay" onclick="closeModal()">
   <div id="modal-box" onclick="event.stopPropagation()">
     <div id="modal-content"></div>
@@ -215,18 +217,16 @@ td.amt-inc{color:var(--c-income);font-weight:600}
   </div>
 </div>
 
-<div id="layout">
-<!-- 사이드바 -->
+<div id="layout" style="display:none">
 <aside id="sidebar">
   <div id="sidebar-top">
-    <div id="sidebar-logo"><i class="ti ti-building-school" style="color:var(--c-accent)"></i> JLS 운영비</div>
+    <div id="sidebar-logo"><i class="ti ti-building-school" style="color:var(--c-accent)"></i> JLS 운영비 1.0</div>
     <select id="branch-sel" onchange="changeBranch(this.value)"></select>
     <div id="sidebar-user">
-      <span id="role-badge-side" style="font-size:11px;color:var(--text3)"></span>
-      <span id="user-id-side" style="font-size:11px;color:var(--text3)"></span>
+      <span id="role-badge-side"></span>
+      <span id="user-id-side"></span>
     </div>
   </div>
-
   <nav id="sidebar-nav">
     <div class="nav-section">메뉴</div>
     <div class="nav-item active" onclick="showPage('ledger',this)"><i class="ti ti-list-details"></i> 거래내역</div>
@@ -234,26 +234,21 @@ td.amt-inc{color:var(--c-income);font-weight:600}
     <div class="nav-item" id="nav-allbranch" style="display:none" onclick="showPage('allbranch',this)"><i class="ti ti-layout-grid"></i> 전분원현황</div>
     <div class="nav-item" onclick="showPage('supplies',this)"><i class="ti ti-box"></i> 소모품관리</div>
   </nav>
-
-  <!-- 바로가기 위젯 -->
   <div id="shortcuts-box">
     <div class="shortcuts-title">
       <span>바로가기</span>
-      <button class="add-shortcut" onclick="openScEdit()" title="편집"><i class="ti ti-pencil"></i></button>
+      <button class="add-shortcut" onclick="openScEdit()"><i class="ti ti-pencil"></i></button>
     </div>
     <div id="shortcut-links"></div>
   </div>
-
   <div id="sidebar-bottom">
     <button class="sidebar-btn" onclick="showPw()"><i class="ti ti-key" style="font-size:15px"></i> 비밀번호 변경</button>
     <button class="sidebar-btn" onclick="doLogout()"><i class="ti ti-logout" style="font-size:15px"></i> 로그아웃</button>
   </div>
 </aside>
 
-<!-- 메인 -->
 <main id="content">
 
-  <!-- 거래내역 -->
   <div id="page-ledger" class="page active">
     <div class="page-header"><i class="ti ti-list-details" style="color:var(--c-primary)"></i> 거래내역</div>
     <div class="stat-grid" id="ledger-stats"></div>
@@ -274,62 +269,85 @@ td.amt-inc{color:var(--c-income);font-weight:600}
         <button class="btn btn-ghost btn-sm" onclick="clearFilter()">초기화</button>
       </div>
 
-      <div class="inline-form" id="add-form" style="display:none">
-        <div class="form-grid">
-          <div class="fgroup">
-            <label>날짜 *</label>
-            <input type="date" id="f-date">
-          </div>
-          <div class="fgroup">
-            <label>구분 * <span class="shortcut-hint">(+입금 / -지출)</span></label>
-            <div class="kind-toggle">
-              <button type="button" class="kind-btn active-exp" id="btn-exp" onclick="setKind('지출')">지출</button>
-              <button type="button" class="kind-btn" id="btn-inc" onclick="setKind('입금')">입금</button>
+      <div id="form-area" style="display:none">
+        <div class="form-with-ref">
+          <div class="inline-form">
+            <div class="form-grid">
+              <div class="fgroup">
+                <label>날짜 *</label>
+                <input type="date" id="f-date">
+              </div>
+              <div class="fgroup">
+                <label>구분 * <span class="shortcut-hint">(+입금 / -지출)</span></label>
+                <div class="kind-toggle">
+                  <button type="button" class="kind-btn active-exp" id="btn-exp" onclick="setKind('지출')">지출</button>
+                  <button type="button" class="kind-btn" id="btn-inc" onclick="setKind('입금')">입금</button>
+                </div>
+                <input type="hidden" id="f-kind" value="지출">
+              </div>
+              <div class="fgroup">
+                <label>계정과목 * <span class="shortcut-hint">(코드 입력 가능)</span></label>
+                <div class="acct-combo">
+                  <input type="text" id="f-acct-text" placeholder="코드 또는 이름" autocomplete="off"
+                    oninput="filterAcct(this.value)" onfocus="showAcctDrop()" onblur="setTimeout(hideAcctDrop,200)">
+                  <input type="hidden" id="f-acct-code">
+                  <div class="acct-dropdown" id="acct-dropdown"></div>
+                </div>
+              </div>
+              <div class="fgroup">
+                <label>거래처</label>
+                <input type="text" id="f-vendor" placeholder="거래처명">
+              </div>
+              <div class="fgroup">
+                <label>금액 *</label>
+                <input type="number" id="f-amt" placeholder="0">
+              </div>
+              <div class="fgroup" id="qty-field" style="display:none">
+                <label>수량 <span class="shortcut-hint">(소모품 주기 분석용)</span></label>
+                <input type="number" id="f-qty" placeholder="1" min="1" value="1">
+              </div>
+              <div class="fgroup" id="receipt-field">
+                <label>영수증 (선택)</label>
+                <div class="upload-area" id="upload-area" onclick="document.getElementById('f-receipt').click()"
+                  ondragover="event.preventDefault();this.classList.add('drag')"
+                  ondragleave="this.classList.remove('drag')"
+                  ondrop="handleDrop(event)">
+                  <i class="ti ti-upload" style="font-size:16px"></i>
+                  <span id="upload-label">클릭 또는 드래그 (JPG·PNG·PDF)</span>
+                </div>
+                <input type="file" id="f-receipt" accept="image/*,.pdf" style="display:none" onchange="previewReceipt(this)">
+                <div id="receipt-preview" style="display:none;align-items:center;gap:8px;margin-top:6px">
+                  <img id="receipt-img" style="width:48px;height:48px;border-radius:6px;object-fit:cover;cursor:pointer;border:1px solid var(--border)" src="" alt="영수증" onclick="showReceiptPreview()">
+                  <div><div id="receipt-filename" style="font-size:11px;color:var(--text2)"></div>
+                  <button type="button" style="font-size:11px;color:var(--c-accent);background:none;border:none;cursor:pointer;padding:0" onclick="clearReceipt()">삭제</button></div>
+                </div>
+              </div>
             </div>
-            <input type="hidden" id="f-kind" value="지출">
-          </div>
-          <div class="fgroup">
-            <label>계정과목 * <span class="shortcut-hint">(코드 입력 가능)</span></label>
-            <div class="acct-combo">
-              <input type="text" id="f-acct-text" placeholder="코드 또는 이름" autocomplete="off"
-                oninput="filterAcct(this.value)" onfocus="showAcctDrop()" onblur="setTimeout(hideAcctDrop,200)">
-              <input type="hidden" id="f-acct-code">
-              <div class="acct-dropdown" id="acct-dropdown"></div>
+            <div class="fgroup"><label>적요</label><textarea id="f-memo-in" rows="2" placeholder="거래 내용 메모 (소모품명 포함 시 주기 분석에 활용됨)"></textarea></div>
+            <div class="form-actions">
+              <button class="btn btn-ghost" onclick="toggleForm()">취소</button>
+              <button class="btn btn-primary" id="save-btn" onclick="saveEntry()"><i class="ti ti-check"></i> 저장</button>
             </div>
           </div>
-          <div class="fgroup">
-            <label>거래처</label>
-            <input type="text" id="f-vendor" placeholder="거래처명">
+
+          <!-- 빠른참조 표 -->
+          <div class="ref-table-box">
+            <div class="ref-title"><i class="ti ti-table" style="font-size:13px;color:var(--c-primary)"></i> 계정과목 빠른참조</div>
+            <table class="ref-tbl">
+              <thead><tr><th>코드</th><th>계정과목</th><th>주요 해당 항목</th></tr></thead>
+              <tbody>
+                <tr><td>803</td><td>상여금</td><td>특정 선생님 성과 포상</td></tr>
+                <tr><td>811</td><td>복리후생비</td><td>전 직원 명절선물, 회식, 간식</td></tr>
+                <tr><td>813</td><td>접대비</td><td>일부 수강생 간식, 즉흥 특정반 포상</td></tr>
+                <tr><td>827</td><td>회의비</td><td>원장단 회의 음료·다과</td></tr>
+                <tr><td>830</td><td>소모품비</td><td>필기류, 복사용지, 위생·비품류, 수업용품, 소형기기</td></tr>
+                <tr><td>833</td><td>광고선전비</td><td>우수학생 시상, 현수막·홍보물 제작</td></tr>
+                <tr><td>834</td><td>판매촉진비</td><td>사전 공지된 우수반 포상 음식</td></tr>
+                <tr><td>841</td><td>행사비</td><td>마켓데이·푸드데이 등 학원 행사</td></tr>
+                <tr><td>842</td><td>기타잡비</td><td>사진 인화, 기타 소액 지출</td></tr>
+              </tbody>
+            </table>
           </div>
-          <div class="fgroup">
-            <label>금액 *</label>
-            <input type="number" id="f-amt" placeholder="0">
-          </div>
-          <div class="fgroup" id="qty-field" style="display:none">
-            <label>수량 <span class="shortcut-hint">(소모품 주기 분석용)</span></label>
-            <input type="number" id="f-qty" placeholder="1" min="1" value="1">
-          </div>
-          <div class="fgroup" id="receipt-field">
-            <label>영수증 (선택)</label>
-            <div class="upload-area" id="upload-area" onclick="document.getElementById('f-receipt').click()"
-              ondragover="event.preventDefault();this.classList.add('drag')"
-              ondragleave="this.classList.remove('drag')"
-              ondrop="handleDrop(event)">
-              <i class="ti ti-upload" style="font-size:16px"></i>
-              <span id="upload-label">클릭 또는 드래그 (JPG·PNG·PDF)</span>
-            </div>
-            <input type="file" id="f-receipt" accept="image/*,.pdf" style="display:none" onchange="previewReceipt(this)">
-            <div id="receipt-preview" style="display:none;align-items:center;gap:8px;margin-top:6px">
-              <img id="receipt-img" style="width:48px;height:48px;border-radius:6px;object-fit:cover;cursor:pointer;border:1px solid var(--border)" src="" alt="영수증" onclick="showReceiptPreview()">
-              <div><div id="receipt-filename" style="font-size:11px;color:var(--text2)"></div>
-              <button type="button" style="font-size:11px;color:var(--c-accent);background:none;border:none;cursor:pointer;padding:0" onclick="clearReceipt()">삭제</button></div>
-            </div>
-          </div>
-        </div>
-        <div class="fgroup"><label>적요</label><textarea id="f-memo-in" rows="2" placeholder="거래 내용 메모 (소모품명 포함 시 주기 분석에 활용됨)"></textarea></div>
-        <div class="form-actions">
-          <button class="btn btn-ghost" onclick="toggleForm()">취소</button>
-          <button class="btn btn-primary" id="save-btn" onclick="saveEntry()"><i class="ti ti-check"></i> 저장</button>
         </div>
       </div>
 
@@ -343,7 +361,6 @@ td.amt-inc{color:var(--c-income);font-weight:600}
     </div>
   </div>
 
-  <!-- 통계분석 -->
   <div id="page-stats" class="page">
     <div class="page-header"><i class="ti ti-chart-pie" style="color:var(--c-primary)"></i> 통계분석</div>
     <div class="card">
@@ -356,7 +373,6 @@ td.amt-inc{color:var(--c-income);font-weight:600}
     </div>
   </div>
 
-  <!-- 전분원 -->
   <div id="page-allbranch" class="page">
     <div class="page-header"><i class="ti ti-layout-grid" style="color:var(--c-primary)"></i> 전분원 현황</div>
     <div class="card">
@@ -369,18 +385,13 @@ td.amt-inc{color:var(--c-income);font-weight:600}
     </div>
   </div>
 
-  <!-- 소모품관리 -->
   <div id="page-supplies" class="page">
     <div class="page-header"><i class="ti ti-box" style="color:var(--c-primary)"></i> 소모품 관리</div>
     <div class="supply-tabs">
       <button class="supply-tab active" onclick="showSupplyTab('cycle',this)">구매주기 분석</button>
       <button class="supply-tab" onclick="showSupplyTab('items',this)">소모품 목록 관리</button>
     </div>
-    <!-- 구매주기 분석 -->
-    <div id="supply-tab-cycle">
-      <div id="supply-list"></div>
-    </div>
-    <!-- 소모품 목록 관리 -->
+    <div id="supply-tab-cycle"><div id="supply-list"></div></div>
     <div id="supply-tab-items" style="display:none">
       <div class="card">
         <div style="display:flex;gap:8px;margin-bottom:1rem">
@@ -394,7 +405,6 @@ td.amt-inc{color:var(--c-income);font-weight:600}
 </main>
 </div>
 
-<!-- 챗봇 -->
 <button id="chat-fab" onclick="toggleChat()"><i class="ti ti-message-chatbot"></i></button>
 <div id="chat-panel" class="hidden">
   <div id="chat-header"><div class="dot"></div><span>계정과목 AI 도우미</span><button id="chat-close" onclick="toggleChat()"><i class="ti ti-x"></i></button></div>
@@ -418,12 +428,11 @@ const ACCOUNTS=[
   {code:'814',name:'통신비'},{code:'815',name:'수도광열비'},{code:'816',name:'전력비'},
   {code:'817',name:'세금과공과금'},{code:'818',name:'감가상각비'},{code:'819',name:'지급임차료'},
   {code:'820',name:'수선비'},{code:'821',name:'보험료'},{code:'822',name:'차량유지비'},
-  {code:'823',name:'경상연구개발비'},{code:'824',name:'운반비'},{code:'825',name:'교육훈련비'},
-  {code:'826',name:'도서인쇄비'},{code:'827',name:'회의비'},{code:'829',name:'사무용품비'},
+  {code:'825',name:'교육훈련비'},{code:'826',name:'도서인쇄비'},{code:'827',name:'회의비'},
   {code:'830',name:'소모품비'},{code:'831',name:'지급수수료'},{code:'833',name:'광고선전비'},
-  {code:'837',name:'건물관리비'},{code:'103',name:'보통예금'},{code:'253',name:'미지급금'},
-  {code:'260',name:'단기차입금'},{code:'901',name:'이자수익'},{code:'930',name:'잡이익'},
-  {code:'931',name:'이자비용'},{code:'960',name:'잡손실'}
+  {code:'834',name:'판매촉진비'},{code:'841',name:'행사비'},{code:'842',name:'기타잡비'},
+  {code:'103',name:'보통예금'},{code:'253',name:'미지급금'},{code:'260',name:'단기차입금'},
+  {code:'901',name:'이자수익'},{code:'930',name:'잡이익'},{code:'931',name:'이자비용'},{code:'960',name:'잡손실'}
 ];
 const BRANCHES=['남동탄JLS','수원JLS','수원JLS2009','서수원JLS','운정JLS','운정JLS2','테스트JLS'];
 let curUser=null,curBranch=null,allEntries=[],receiptB64=null,chatHistory=[];
@@ -432,7 +441,6 @@ function showLoading(v){document.getElementById('loading-overlay').classList[v?'
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
 function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open')}
 
-/* ===== 로그인 ===== */
 async function doLogin(){
   const id=document.getElementById('lid').value.trim();
   const pw=document.getElementById('lpw').value;
@@ -454,8 +462,6 @@ function doLogout(){
   document.getElementById('layout').style.display='none';
   document.getElementById('lid').value='';document.getElementById('lpw').value='';
 }
-
-/* ===== 초기화 ===== */
 function initApp(){
   const labels={super:'수퍼바이저',visor:'바이저',user:'사용자'};
   document.getElementById('role-badge-side').textContent=labels[curUser.role]||'';
@@ -464,17 +470,14 @@ function initApp(){
   sel.innerHTML=curUser.branches.map(b=>`<option value="${b}">${b}</option>`).join('');
   sel.value=curBranch;
   if(curUser.role!=='user') document.getElementById('nav-allbranch').style.display='flex';
-  initDates();
-  populateFilterSelect();
-  loadEntries();
-  renderShortcuts();
+  initDates();populateFilterSelect();loadEntries();renderShortcuts();
   document.addEventListener('keydown',globalKey);
 }
 function globalKey(e){
   const tag=document.activeElement.tagName;
   if(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT')return;
-  if(e.key==='+'){e.preventDefault();if(document.getElementById('add-form').style.display==='none')toggleForm();setKind('입금')}
-  if(e.key==='-'){e.preventDefault();if(document.getElementById('add-form').style.display==='none')toggleForm();setKind('지출')}
+  if(e.key==='+'){e.preventDefault();if(document.getElementById('form-area').style.display==='none')toggleForm();setKind('입금')}
+  if(e.key==='-'){e.preventDefault();if(document.getElementById('form-area').style.display==='none')toggleForm();setKind('지출')}
 }
 function initDates(){
   const now=new Date(),y=now.getFullYear(),m=String(now.getMonth()+1).padStart(2,'0');
@@ -489,14 +492,11 @@ function populateFilterSelect(){
   const opts=ACCOUNTS.map(a=>`<option value="${a.code}">${a.code} ${a.name}</option>`).join('');
   document.getElementById('f-acct').innerHTML='<option value="">계정 전체</option>'+opts;
 }
-
-/* ===== 구분 / 계정 ===== */
 function setKind(kind){
   document.getElementById('f-kind').value=kind;
   document.getElementById('btn-exp').className='kind-btn'+(kind==='지출'?' active-exp':'');
   document.getElementById('btn-inc').className='kind-btn'+(kind==='입금'?' active-inc':'');
   document.getElementById('receipt-field').style.display=kind==='지출'?'flex':'none';
-  // 수량 필드는 소모품비(830) 선택 시 표시
   updateQtyField();
 }
 function updateQtyField(){
@@ -519,8 +519,6 @@ function selectAcct(code,name){
 }
 function showAcctDrop(){filterAcct(document.getElementById('f-acct-text').value)}
 function hideAcctDrop(){document.getElementById('acct-dropdown').classList.remove('show')}
-
-/* ===== 영수증 ===== */
 function handleDrop(e){
   e.preventDefault();
   document.getElementById('upload-area').classList.remove('drag');
@@ -554,10 +552,8 @@ function showReceiptPreview(){
   document.getElementById('modal-content').innerHTML=`<img src="${document.getElementById('receipt-img').src}" alt="영수증">`;
   document.getElementById('modal-overlay').classList.add('open');
 }
-
-/* ===== 폼 ===== */
 function toggleForm(){
-  const f=document.getElementById('add-form');
+  const f=document.getElementById('form-area');
   const open=f.style.display==='none';
   f.style.display=open?'block':'none';
   if(open){
@@ -569,12 +565,9 @@ function toggleForm(){
     document.getElementById('f-vendor').value='';
     document.getElementById('f-acct-text').value='';
     document.getElementById('f-acct-code').value='';
-    setKind('지출');
-    filterAcct('');
+    setKind('지출');filterAcct('');
   }
 }
-
-/* ===== CRUD ===== */
 async function loadEntries(){
   showLoading(true);
   const from=document.getElementById('f-from')?.value;
@@ -669,8 +662,6 @@ async function deleteEntry(id){
 }
 function closeModal(){document.getElementById('modal-overlay').classList.remove('open')}
 document.getElementById('modal-overlay').addEventListener('click',function(e){if(e.target===this)closeModal()});
-
-/* ===== 통계 ===== */
 async function loadStats(){
   const from=document.getElementById('s-from')?.value;
   const to=document.getElementById('s-to')?.value;
@@ -699,8 +690,6 @@ async function loadStats(){
         <div class="bar-amt">${val.toLocaleString()}원</div>
       </div>`).join('')}${sorted.length===0?'<div class="empty">데이터 없음</div>':''}</div>`;
 }
-
-/* ===== 전분원 ===== */
 async function loadAllBranch(){
   if(curUser.role==='user')return;
   const from=document.getElementById('ab-from')?.value;
@@ -724,8 +713,6 @@ async function loadAllBranch(){
       </div></div>`;
   }).join('');
 }
-
-/* ===== 소모품 ===== */
 function showSupplyTab(tab,el){
   document.querySelectorAll('.supply-tab').forEach(t=>t.classList.remove('active'));
   el.classList.add('active');
@@ -734,55 +721,36 @@ function showSupplyTab(tab,el){
   if(tab==='cycle') loadSupplyCycle();
   if(tab==='items') loadSupplyItems();
 }
-
-async function loadSupplies(){
-  loadSupplyCycle();
-}
-
+async function loadSupplies(){loadSupplyCycle()}
 async function loadSupplyCycle(){
   showLoading(true);
   const{data:supplies}=await sb.from('supplies').select('*').eq('branch',curBranch).order('created_at');
-  // 전체 지출 내역 (기간 제한 없이)
   const{data:ents}=await sb.from('entries').select('*').eq('branch',curBranch).eq('code','830').order('date',{ascending:true});
   showLoading(false);
-  renderSupplyCycle(supplies||[],ents||[]);
-}
-
-function renderSupplyCycle(supplies,entries){
   const el=document.getElementById('supply-list');
-  if(supplies.length===0){
+  if(!supplies||supplies.length===0){
     el.innerHTML='<div class="card"><div class="empty"><i class="ti ti-box"></i>소모품을 추가해주세요<br><small style="font-size:11px;margin-top:4px;display:block">소모품 목록 관리 탭에서 추가하세요</small></div></div>';
     return;
   }
-  el.innerHTML=supplies.map(s=>{
-    // 해당 소모품명이 적요에 포함된 구매내역
-    const purchases=entries.filter(e=>(e.memo||'').includes(s.name));
+  el.innerHTML=(supplies||[]).map(s=>{
+    const purchases=(ents||[]).filter(e=>(e.memo||'').includes(s.name));
     if(purchases.length===0){
       return `<div class="card supply-item">
         <div style="flex:1"><div class="supply-name">${s.name} <span style="font-size:11px;color:var(--text3)">(단위: ${s.unit})</span></div>
         <div class="supply-meta">구매 이력 없음 — 소모품비(830) 지출 시 적요에 품명을 포함하세요</div></div>
         <span class="cycle-badge cycle-warn">이력없음</span></div>`;
     }
-
-    // 수량 기반 총 누적 수량 및 경과일 계산
     const totalQty=purchases.reduce((s,e)=>s+(e.qty||1),0);
     const firstDate=new Date(purchases[0].date);
-    const lastDate=new Date(purchases[purchases.length-1].date);
     const totalDays=Math.round((Date.now()-firstDate.getTime())/86400000)||1;
-    // 단위당 소진 일수 = 총 경과일 / 총 수량
     const daysPerUnit=Math.round(totalDays/totalQty);
-    // 마지막 구매 후 경과일
+    const lastDate=new Date(purchases[purchases.length-1].date);
     const daysSinceLast=Math.round((Date.now()-lastDate.getTime())/86400000);
-    // 마지막 구매 수량
     const lastQty=purchases[purchases.length-1].qty||1;
-    // 예상 소진일 = 마지막구매일 + (단위당소진일 * 마지막구매수량)
-    const expectedDays=daysPerUnit*lastQty;
-    const remaining=expectedDays-daysSinceLast;
-
+    const remaining=(daysPerUnit*lastQty)-daysSinceLast;
     let statusClass='cycle-ok',statusText='여유';
     if(remaining<=0){statusClass='cycle-over';statusText='구매필요'}
     else if(remaining<=daysPerUnit*0.3){statusClass='cycle-warn';statusText='검토필요'}
-
     return `<div class="card supply-item">
       <div style="flex:1">
         <div class="supply-name">${s.name} <span style="font-size:11px;color:var(--text3)">(단위: ${s.unit})</span></div>
@@ -795,7 +763,6 @@ function renderSupplyCycle(supplies,entries){
     </div>`;
   }).join('');
 }
-
 async function loadSupplyItems(){
   const{data:supplies}=await sb.from('supplies').select('*').eq('branch',curBranch).order('created_at');
   const el=document.getElementById('supply-items-list');
@@ -806,7 +773,6 @@ async function loadSupplyItems(){
       <button class="btn btn-ghost btn-sm" onclick="deleteSupply(${s.id})" style="padding:4px 8px"><i class="ti ti-trash"></i></button>
     </div>`).join('');
 }
-
 async function showAddSupply(){
   const name=prompt('소모품 이름 (예: A4용지)');if(!name)return;
   const unit=prompt('구매 단위 (예: 박스, 개, 묶음)','박스');if(!unit)return;
@@ -823,8 +789,6 @@ async function deleteSupply(id){
   showLoading(false);
   toast('삭제되었습니다');loadSupplyItems();
 }
-
-/* ===== 엑셀 ===== */
 function exportExcel(){
   const memo=document.getElementById('f-memo')?.value?.toLowerCase()||'';
   const data=memo?allEntries.filter(e=>(e.memo||'').toLowerCase().includes(memo)):allEntries;
@@ -848,8 +812,6 @@ async function exportAllExcel(){
   a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));
   a.download=`전분원_거래내역_${new Date().toISOString().split('T')[0]}.csv`;a.click();
 }
-
-/* ===== 페이지 전환 ===== */
 function showPage(name,el){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
@@ -858,11 +820,8 @@ function showPage(name,el){
   if(name==='stats') loadStats();
   if(name==='allbranch') loadAllBranch();
   if(name==='supplies') loadSupplies();
-  // 모바일 사이드바 닫기
   document.getElementById('sidebar').classList.remove('open');
 }
-
-/* ===== 바로가기 ===== */
 function scKey(){return'jls_shortcuts_'+curBranch}
 function getShortcuts(){
   const def=[{name:'교재관리',url:'https://varonnetworks.github.io/varonbooks'},{name:'국민은행',url:'https://www.kbstar.com'}];
@@ -871,22 +830,19 @@ function getShortcuts(){
 function saveShortcuts(arr){localStorage.setItem(scKey(),JSON.stringify(arr))}
 function renderShortcuts(){
   const sc=getShortcuts();
-  const el=document.getElementById('shortcut-links');
-  el.innerHTML=sc.map((s,i)=>`
+  document.getElementById('shortcut-links').innerHTML=sc.map(s=>`
     <a class="shortcut-link" href="${s.url}" target="_blank" rel="noopener">
       <i class="ti ti-external-link"></i><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.name}</span>
     </a>`).join('');
 }
-function openScEdit(){
-  renderScEditList();
-  document.getElementById('sc-overlay').classList.add('open');
-}
+function openScEdit(){renderScEditList();document.getElementById('sc-overlay').classList.add('open')}
 function closeScEdit(){document.getElementById('sc-overlay').classList.remove('open')}
 function renderScEditList(){
   const sc=getShortcuts();
   document.getElementById('sc-edit-list').innerHTML=sc.map((s,i)=>`
     <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)">
-      <div style="flex:1"><div style="font-size:13px;font-weight:600">${s.name}</div><div style="font-size:11px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:240px">${s.url}</div></div>
+      <div style="flex:1"><div style="font-size:13px;font-weight:600">${s.name}</div>
+      <div style="font-size:11px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:240px">${s.url}</div></div>
       <button class="btn btn-ghost btn-sm" onclick="removeShortcut(${i})" style="padding:4px 8px"><i class="ti ti-trash"></i></button>
     </div>`).join('')||'<div style="font-size:12px;color:var(--text3);padding:8px 0">바로가기가 없습니다</div>';
 }
@@ -905,8 +861,6 @@ function removeShortcut(i){
   const sc=getShortcuts();sc.splice(i,1);saveShortcuts(sc);
   renderScEditList();renderShortcuts();
 }
-
-/* ===== 비밀번호 ===== */
 function showPw(){
   document.getElementById('pw-overlay').classList.add('open');
   ['pw-cur','pw-new','pw-new2'].forEach(id=>document.getElementById(id).value='');
@@ -928,8 +882,6 @@ async function changePw(){
   if(error){err.textContent='오류: '+error.message;return}
   curUser.password=nw;toast('비밀번호가 변경되었습니다');closePw();
 }
-
-/* ===== 챗봇 ===== */
 function toggleChat(){document.getElementById('chat-panel').classList.toggle('hidden')}
 async function sendChat(){
   const inp=document.getElementById('chat-input');
