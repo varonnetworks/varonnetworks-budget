@@ -256,7 +256,7 @@ tr:hover .edit-inline-btn{opacity:1}
   <div class="login-card">
     <div class="login-logo">
       <h1>정상어학원</h1>
-      <p>운영비 관리 시스템 1.0</p>
+      <p>운영비 관리 시스템</p>
     </div>
     <div class="login-err" id="login-err"></div>
     <div class="form-group">
@@ -285,7 +285,7 @@ tr:hover .edit-inline-btn{opacity:1}
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-logo">
         <h1 id="sidebar-branch-name">정상어학원</h1>
-        <span>운영비 관리 시스템 1.0</span>
+        <span>운영비 관리 시스템</span>
         <div id="sidebar-role-badge"></div>
       </div>
       <!-- 바이저/수퍼어드민 분원 선택 -->
@@ -391,8 +391,7 @@ tr:hover .edit-inline-btn{opacity:1}
           </table>
         </div>
         <div id="ledger-summary-bar" style="display:flex;gap:16px;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius-lg) var(--radius-lg);font-size:13px;flex-wrap:wrap;align-items:center;">
-          <button class="btn btn-sm" onclick="addLedgerRow('expense')" style="background:var(--red-bg);color:var(--red);border-color:#fecaca;padding:4px 10px;">+ 지출</button>
-          <button class="btn btn-sm" onclick="addLedgerRow('income')" style="background:var(--green-bg);color:var(--green);border-color:#bbf7d0;padding:4px 10px;">+ 입금</button>
+          <button class="btn btn-sm" onclick="addLedgerRow()" style="padding:4px 10px;">+ 행 추가</button>
         </div>
       </section>
 
@@ -1261,15 +1260,15 @@ function renderLedger() {
   // saved rows
   const savedHtml = allRows.length ? allRows.map(({rowType, data}) => buildSavedRow(rowType, data)).join('') : '';
 
-  tbody.innerHTML = (savedHtml || '<tr><td colspan="8"><div class="empty-state">내역이 없습니다. 아래 버튼으로 추가해보세요.</div></td></tr>') + pendingHtml;
+  const emptyHtml = (!allRows.length && !pendingRows.length) ? '<tr><td colspan="8"><div class="empty-state">내역이 없습니다. 아래 버튼으로 추가해보세요.</div></td></tr>' : '';
+  tbody.innerHTML = emptyHtml + (savedHtml||'') + pendingHtml;
 
   // summary
   const sumBar = document.getElementById('ledger-summary-bar');
   if (sumBar) {
     const bal = totalInc - totalExp;
     sumBar.innerHTML = `
-      <button class="btn btn-sm" onclick="addLedgerRow('expense')" style="background:var(--red-bg);color:var(--red);border-color:#fecaca;padding:4px 10px;">+ 지출</button>
-      <button class="btn btn-sm" onclick="addLedgerRow('income')" style="background:var(--green-bg);color:var(--green);border-color:#bbf7d0;padding:4px 10px;">+ 입금</button>
+      <button class="btn btn-sm" onclick="addLedgerRow()" style="padding:4px 10px;">+ 행 추가</button>
       <span style="margin-left:8px;">입금 <strong style="color:var(--green);">${fmt(totalInc)}</strong></span>
       <span>지출 <strong style="color:var(--red);">${fmt(totalExp)}</strong></span>
       <span>잔액 <strong style="${bal>=0?'color:var(--green)':'color:var(--red)'}">${fmt(bal)}</strong></span>
@@ -1311,9 +1310,9 @@ function buildSavedRow(rowType, data) {
            </div>`
         : `<img src="${data.file_url}" style="width:28px;height:28px;object-fit:cover;border-radius:4px;border:1px solid var(--border);cursor:pointer;" onclick="document.getElementById('viewer-img').src='${data.file_url}';document.getElementById('img-viewer').style.display='flex';" title="영수증 보기">`;
     } else {
-      receiptCell = `<label title="영수증 첨부" style="width:28px;height:28px;border:1.5px dashed var(--border2);border-radius:4px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text3);" onclick="triggerReceiptUpload(${id})">
+      receiptCell = `<button title="영수증 첨부" style="width:28px;height:28px;border:1.5px dashed var(--border2);border-radius:4px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text3);background:none;" onclick="triggerReceiptUpload(${id})">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-      </label>`;
+      </button>`;
     }
   }
 
@@ -1330,7 +1329,7 @@ function buildSavedRow(rowType, data) {
     <td><div class="ledger-cell" onclick="startEditSaved(this,'item','${isInc?'inc':'exp'}',${id},'${(isInc?data.memo||'':data.item||'').split("'").join("\'")}'">${isInc?(data.memo||''):(data.item||'<span style="color:var(--text3);">-</span>')}</div></td>
     <td><div class="ledger-cell ledger-amount" style="justify-content:flex-end;" onclick="startEditSaved(this,'amount','${isInc?'inc':'exp'}',${id},${data.amount||0})">${fmt(data.amount||0)}</div></td>
     <td><div class="ledger-cell" style="justify-content:center;padding:4px;">
-      <button class="delete-btn" onclick="event.stopPropagation();${isInc?`deleteIncome(${id})`:`deleteExpSingle(${id})`}" title="삭제">
+      <button class="delete-btn" onclick="event.stopPropagation();deleteLedgerRow('${rowType}',${id})" title="삭제">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
       </button>
     </div></td>
@@ -1361,14 +1360,18 @@ function buildPendingRow(r, idx) {
 }
 
 // 신규 행 추가
-function addLedgerRow(type) {
+function addLedgerRow() {
   const today = new Date().toISOString().slice(0,10);
-  pendingRows.unshift({ type, date:today, account_code:'', account_name:'', store:'', item:'', amount:'' });
+  pendingRows.push({ type:'expense', date:today, account_code:'', account_name:'', store:'', item:'', amount:'' });
   renderLedger();
-  // 첫 번째 pending row의 계정과목 input에 포커스
+  // 마지막 pending row 날짜 셀에 포커스
   setTimeout(()=>{
-    const inp = document.querySelector(`[id="pending-acct-cell-0"] input`);
-    if (inp) inp.focus();
+    const rows = document.querySelectorAll('tr[data-pending]');
+    if (rows.length) {
+      const lastRow = rows[rows.length-1];
+      const inp = lastRow.querySelector('input');
+      if (inp) inp.focus();
+    }
   }, 50);
 }
 
@@ -1553,6 +1556,18 @@ async function deleteExpSingle(id) {
   if (!confirm('삭제할까요?')) return;
   await api('DELETE','expenses',null,`?id=eq.${id}`);
   expenses = expenses.filter(e=>e.id!==id);
+  renderLedger(); renderDashboard();
+}
+
+async function deleteLedgerRow(rowType, id) {
+  if (!confirm('삭제할까요?')) return;
+  if (rowType === 'income') {
+    await api('DELETE','incomes',null,`?id=eq.${id}`);
+    incomes = incomes.filter(i=>i.id!==id);
+  } else {
+    await api('DELETE','expenses',null,`?id=eq.${id}`);
+    expenses = expenses.filter(e=>e.id!==id);
+  }
   renderLedger(); renderDashboard();
 }
 
@@ -1972,7 +1987,7 @@ async function sendChat() {
   appendChatMsg('ai', '<span class="ai-loading"><span class="spinner"></span>분석 중...</span>');
 
   try {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${getGeminiKey()}`, {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${getGeminiKey()}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -2141,7 +2156,7 @@ async function analyzeReceipt(file, isPdf) {
       mimeType = file.type;
     }
 
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${getGeminiKey()}`, {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${getGeminiKey()}`, {
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({
@@ -2571,7 +2586,7 @@ async function sendFloatChat() {
       return;
     }
     const ACCT_CTX = ACCOUNT_CODES_DATA.map(a=>`${a.code} ${a.name}(${a.category})`).join(', ');
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`, {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ contents:[{ parts:[{ text:'더존 Smart A 10 회계 계정과목 전문가입니다. 한국 어학원 운영 비용/수입에 적합한 계정과목을 추천해주세요.\n계정과목: '+ACCT_CTX+'\n규칙: 짧고 명확하게, 코드+이름 함께 (예: 819 지급임차료), 모르면 가까운 계정 추천 후 세무사 확인 권장\n질문: '+msg }] }] })
     });
