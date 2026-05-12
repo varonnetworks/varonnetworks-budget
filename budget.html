@@ -256,7 +256,7 @@ tr:hover .edit-inline-btn{opacity:1}
   <div class="login-card">
     <div class="login-logo">
       <h1>정상어학원</h1>
-      <p>운영비 관리 시스템 2.0</p>
+      <p>운영비 관리 시스템 1.0</p>
     </div>
     <div class="login-err" id="login-err"></div>
     <div class="form-group">
@@ -285,7 +285,7 @@ tr:hover .edit-inline-btn{opacity:1}
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-logo">
         <h1 id="sidebar-branch-name">정상어학원</h1>
-        <span>운영비 관리 시스템</span>
+        <span>운영비 관리 시스템 1.0</span>
         <div id="sidebar-role-badge"></div>
       </div>
       <!-- 바이저/수퍼어드민 분원 선택 -->
@@ -366,15 +366,7 @@ tr:hover .edit-inline-btn{opacity:1}
               <button class="today-btn" onclick="goToday()">이번 달</button>
               <button onclick="changeMonth(1)">›</button>
             </div>
-            <button class="btn btn-primary" onclick="addLedgerRow('expense')">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>지출 행 추가
-            </button>
-            <button class="btn" onclick="addLedgerRow('income')" style="color:var(--green);border-color:#bbf7d0;">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>입금 행 추가
-            </button>
-            <button class="btn" onclick="savePendingRows()" id="ledger-save-btn" style="display:none;background:var(--green);color:#fff;border-color:var(--green);">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><polyline points="20 6 9 17 4 12"/></svg>저장
-            </button>
+
           </div>
         </div>
         <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
@@ -398,7 +390,10 @@ tr:hover .edit-inline-btn{opacity:1}
             <tbody id="ledger-tbody"></tbody>
           </table>
         </div>
-        <div id="ledger-summary-bar" style="display:flex;gap:16px;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius-lg) var(--radius-lg);font-size:13px;flex-wrap:wrap;"></div>
+        <div id="ledger-summary-bar" style="display:flex;gap:16px;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius-lg) var(--radius-lg);font-size:13px;flex-wrap:wrap;align-items:center;">
+          <button class="btn btn-sm" onclick="addLedgerRow('expense')" style="background:var(--red-bg);color:var(--red);border-color:#fecaca;padding:4px 10px;">+ 지출</button>
+          <button class="btn btn-sm" onclick="addLedgerRow('income')" style="background:var(--green-bg);color:var(--green);border-color:#bbf7d0;padding:4px 10px;">+ 입금</button>
+        </div>
       </section>
 
       <!-- SEARCH -->
@@ -1255,7 +1250,7 @@ function renderLedger() {
   const allRows = [
     ...filteredInc.map(i=>({rowType:'income', date:i.date, data:i})),
     ...filteredExp.map(e=>({rowType:'expense', date:e.date, data:e}))
-  ].sort((a,b)=>b.date?.localeCompare(a.date));
+  ].sort((a,b)=>a.date?.localeCompare(b.date)); // 오름차순 (아래=최근)
 
   const tbody = document.getElementById('ledger-tbody');
   if (!tbody) return;
@@ -1266,44 +1261,78 @@ function renderLedger() {
   // saved rows
   const savedHtml = allRows.length ? allRows.map(({rowType, data}) => buildSavedRow(rowType, data)).join('') : '';
 
-  tbody.innerHTML = pendingHtml + (savedHtml || '<tr><td colspan="8"><div class="empty-state">내역이 없습니다. 위 버튼으로 추가해보세요.</div></td></tr>');
+  tbody.innerHTML = (savedHtml || '<tr><td colspan="8"><div class="empty-state">내역이 없습니다. 아래 버튼으로 추가해보세요.</div></td></tr>') + pendingHtml;
 
   // summary
   const sumBar = document.getElementById('ledger-summary-bar');
   if (sumBar) {
     const bal = totalInc - totalExp;
-    sumBar.innerHTML = `<span>입금 <strong style="color:var(--green);">${fmt(totalInc)}</strong></span><span>지출 <strong style="color:var(--red);">${fmt(totalExp)}</strong></span><span>잔액 <strong style="${bal>=0?'color:var(--green)':'color:var(--red)'}">${fmt(bal)}</strong></span>`;
+    sumBar.innerHTML = `
+      <button class="btn btn-sm" onclick="addLedgerRow('expense')" style="background:var(--red-bg);color:var(--red);border-color:#fecaca;padding:4px 10px;">+ 지출</button>
+      <button class="btn btn-sm" onclick="addLedgerRow('income')" style="background:var(--green-bg);color:var(--green);border-color:#bbf7d0;padding:4px 10px;">+ 입금</button>
+      <span style="margin-left:8px;">입금 <strong style="color:var(--green);">${fmt(totalInc)}</strong></span>
+      <span>지출 <strong style="color:var(--red);">${fmt(totalExp)}</strong></span>
+      <span>잔액 <strong style="${bal>=0?'color:var(--green)':'color:var(--red)'}">${fmt(bal)}</strong></span>
+      ${pendingRows.length ? `<button class="btn btn-sm" onclick="savePendingRows()" style="margin-left:auto;background:var(--green);color:#fff;border-color:var(--green);">저장 (${pendingRows.length}건)</button>` : ''}
+    `;
   }
 
-  // save btn visibility
-  const saveBtn = document.getElementById('ledger-save-btn');
-  if (saveBtn) saveBtn.style.display = pendingRows.length ? 'inline-flex' : 'none';
+  // save btn: now rendered inside sumbar
+}
+
+// 그룹 색상 팔레트 (같은 group_id = 같은 색)
+const GROUP_COLORS = ['#eff6ff','#f0fdf4','#fefce8','#fff7ed','#fdf4ff','#f0f9ff'];
+const groupColorMap = {};
+let groupColorIdx = 0;
+function getGroupBg(groupId) {
+  if (!groupId) return '';
+  if (!groupColorMap[groupId]) {
+    groupColorMap[groupId] = GROUP_COLORS[groupColorIdx % GROUP_COLORS.length];
+    groupColorIdx++;
+  }
+  return groupColorMap[groupId];
 }
 
 function buildSavedRow(rowType, data) {
   const isInc = rowType === 'income';
   const badgeStyle = isInc ? 'background:var(--green-bg);color:var(--green);' : 'background:var(--red-bg);color:var(--red);';
-  const badgeText = isInc ? '입금' : '출금';
-  const amtColor = isInc ? 'var(--green)' : 'var(--red)';
+  const badgeText = isInc ? '입금' : (data.gubun || '출금');
   const id = data.id;
-  const receipt = !isInc && data.file_url ? (
-    data.file_type === 'pdf'
-      ? `<div style="width:28px;height:28px;border-radius:4px;background:var(--red-bg);display:flex;align-items:center;justify-content:center;cursor:pointer;" onclick="window.open('${data.file_url}','_blank')">
-           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-         </div>`
-      : `<img src="${data.file_url}" style="width:28px;height:28px;object-fit:cover;border-radius:4px;border:1px solid var(--border);cursor:pointer;" onclick="document.getElementById('viewer-img').src='${data.file_url}';document.getElementById('img-viewer').style.display='flex';">`
-  ) : '';
+  const groupBg = !isInc && data.group_id ? getGroupBg(data.group_id) : '';
+  const rowStyle = groupBg ? `background:${groupBg};` : '';
 
-  return `<tr class="ledger-row-${rowType}" data-id="${id}" data-type="${rowType}">
-    <td><div class="ledger-cell" style="justify-content:center;padding:4px;">${receipt}</div></td>
+  // 영수증 셀: 있으면 썸네일, 없으면 클릭해서 업로드
+  let receiptCell = '';
+  if (!isInc) {
+    if (data.file_url) {
+      receiptCell = data.file_type === 'pdf'
+        ? `<div style="width:28px;height:28px;border-radius:4px;background:var(--red-bg);display:flex;align-items:center;justify-content:center;cursor:pointer;" onclick="window.open('${data.file_url}','_blank')" title="PDF 열기">
+             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+           </div>`
+        : `<img src="${data.file_url}" style="width:28px;height:28px;object-fit:cover;border-radius:4px;border:1px solid var(--border);cursor:pointer;" onclick="document.getElementById('viewer-img').src='${data.file_url}';document.getElementById('img-viewer').style.display='flex';" title="영수증 보기">`;
+    } else {
+      receiptCell = `<label title="영수증 첨부" style="width:28px;height:28px;border:1.5px dashed var(--border2);border-radius:4px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text3);" onclick="triggerReceiptUpload(${id})">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      </label>`;
+    }
+  }
+
+  const acctHtml = data.account_code
+    ? `<span style="font-size:11px;color:var(--text3);margin-right:3px;">${data.account_code}</span>${data.account_name||''}`
+    : '<span style="color:var(--text3);">-</span>';
+
+  return `<tr class="ledger-row-${rowType}" data-id="${id}" data-type="${rowType}" style="${rowStyle}">
+    <td><div class="ledger-cell" style="justify-content:center;padding:4px;">${receiptCell}</div></td>
     <td><div class="ledger-cell" onclick="startEditSaved(this,'date','${isInc?'inc':'exp'}',${id},'${data.date||''}')">${data.date||''}</div></td>
-    <td><div class="ledger-cell" style="justify-content:center;"><span class="ledger-type-badge" style="${badgeStyle}">${badgeText}</span></div></td>
-    <td><div class="ledger-cell" onclick="startEditSaved(this,'acct','${isInc?'inc':'exp'}',${id},'${data.account_code||''}','${(data.account_name||'').replace(/'/g,'\'')}')">${data.account_code?`<span style="font-size:11px;color:var(--text3);margin-right:4px;">${data.account_code}</span>`:''}${data.account_name||'<span style="color:var(--text3);">-</span>'}</div></td>
-    <td><div class="ledger-cell" onclick="startEditSaved(this,'store','${isInc?'inc':'exp'}',${id},'${(data.store||'').replace(/'/g,'\'')}')">${data.store||'<span style="color:var(--text3);">-</span>'}</div></td>
-    <td><div class="ledger-cell" onclick="startEditSaved(this,'item','${isInc?'inc':'exp'}',${id},'${(isInc?data.memo||'':data.item||'').replace(/'/g,'\'')}')">${isInc?(data.memo||''):(data.item||'<span style="color:var(--text3);">-</span>')}</div></td>
+    <td><div class="ledger-cell" style="justify-content:center;padding:2px;" onclick="startEditSavedGubun(this,${id},'${isInc?'inc':'exp'}','${badgeText}')"><span class="ledger-type-badge" style="${badgeStyle}">${badgeText}</span></div></td>
+    <td><div class="ledger-cell" onclick="startEditSaved(this,'acct','${isInc?'inc':'exp'}',${id},'${data.account_code||''}','${(data.account_name||'').split("'").join("\'")}'">${acctHtml}</div></td>
+    <td><div class="ledger-cell" onclick="startEditSaved(this,'store','${isInc?'inc':'exp'}',${id},'${(data.store||'').split("'").join("\'")}'">${data.store||'<span style="color:var(--text3);">-</span>'}</div></td>
+    <td><div class="ledger-cell" onclick="startEditSaved(this,'item','${isInc?'inc':'exp'}',${id},'${(isInc?data.memo||'':data.item||'').split("'").join("\'")}'">${isInc?(data.memo||''):(data.item||'<span style="color:var(--text3);">-</span>')}</div></td>
     <td><div class="ledger-cell ledger-amount" style="justify-content:flex-end;" onclick="startEditSaved(this,'amount','${isInc?'inc':'exp'}',${id},${data.amount||0})">${fmt(data.amount||0)}</div></td>
     <td><div class="ledger-cell" style="justify-content:center;padding:4px;">
-      <button class="delete-btn" onclick="${isInc?`deleteIncome(${id})`:`deleteExpSingle(${id})`}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg></button>
+      <button class="delete-btn" onclick="event.stopPropagation();${isInc?`deleteIncome(${id})`:`deleteExpSingle(${id})`}" title="삭제">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+      </button>
     </div></td>
   </tr>`;
 }
@@ -1313,7 +1342,12 @@ function buildPendingRow(r, idx) {
   return `<tr class="ledger-row-new" data-pending="${idx}">
     <td><div class="ledger-cell" style="justify-content:center;color:var(--text3);font-size:11px;">NEW</div></td>
     <td><div class="ledger-cell editing"><input type="date" value="${r.date||today}" onchange="updatePending(${idx},'date',this.value)" onkeydown="handlePendingKey(event,${idx})"></div></td>
-    <td><div class="ledger-cell" style="justify-content:center;"><span class="ledger-type-badge" style="${r.type==='income'?'background:var(--green-bg);color:var(--green);':'background:var(--red-bg);color:var(--red);'}">${r.type==='income'?'입금':'출금'}</span></div></td>
+    <td><div class="ledger-cell editing" style="justify-content:center;padding:2px;">
+      <select style="padding:4px 6px;border:none;border-bottom:2px solid var(--accent);background:var(--accent-bg);font-size:12px;font-family:inherit;outline:none;border-radius:4px;cursor:pointer;" onchange="updatePending(${idx},'type',this.value)" onkeydown="handleGubunKey(event,${idx},this)">
+        <option value="expense" ${r.type==='expense'?'selected':''}>출금</option>
+        <option value="income" ${r.type==='income'?'selected':''}>입금</option>
+      </select>
+    </div></td>
     <td><div class="ledger-cell editing" id="pending-acct-cell-${idx}">
       <input type="text" placeholder="계정과목 검색..." value="${r.account_name||''}" oninput="searchPendingAcct(this,${idx})" onfocus="searchPendingAcct(this,${idx})" onkeydown="handlePendingKey(event,${idx})" autocomplete="off" style="min-width:150px;">
     </div></td>
@@ -1520,6 +1554,54 @@ async function deleteExpSingle(id) {
   await api('DELETE','expenses',null,`?id=eq.${id}`);
   expenses = expenses.filter(e=>e.id!==id);
   renderLedger(); renderDashboard();
+}
+
+// 영수증 업로드 (저장된 행)
+function triggerReceiptUpload(expId) {
+  const inp = document.createElement('input');
+  inp.type = 'file'; inp.accept = 'image/*,.pdf'; inp.style.display = 'none';
+  inp.onchange = async (e) => {
+    const file = e.target.files[0]; if (!file) return;
+    showToast('영수증 업로드 중...');
+    try {
+      const fname = Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+      const url = await uploadFileFix(file, fname);
+      const ftype = file.type === 'application/pdf' ? 'pdf' : 'image';
+      await api('PATCH','expenses',{file_url:url, file_type:ftype},`?id=eq.${expId}`);
+      const exp = expenses.find(e=>e.id===expId);
+      if (exp) { exp.file_url=url; exp.file_type=ftype; }
+      renderLedger(); showToast('영수증이 첨부되었습니다.');
+    } catch(err) { showToast('업로드 실패: '+err.message); }
+    document.body.removeChild(inp);
+  };
+  document.body.appendChild(inp); inp.click();
+}
+
+// 구분 인라인 편집 (저장된 행)
+async function startEditSavedGubun(cell, id, rowType, curVal) {
+  if (cell.querySelector('select')) return;
+  const orig = cell.innerHTML;
+  const isInc = rowType === 'inc';
+  if (isInc) return; // 입금은 구분 변경 불가
+  cell.innerHTML = `<select style="padding:4px 6px;border:none;border-bottom:2px solid var(--accent);background:var(--accent-bg);font-size:12px;font-family:inherit;outline:none;border-radius:4px;cursor:pointer;" onkeydown="if(event.key==='Escape'){this.closest('td').querySelector('div').innerHTML='${orig.replace(/'/g,"\'")}'}">
+    <option value="출금" ${curVal==='출금'?'selected':''}>출금</option>
+    <option value="입금" ${curVal==='입금'?'selected':''}>입금</option>
+  </select>`;
+  const sel = cell.querySelector('select');
+  sel.focus();
+  sel.onchange = async () => {
+    const val = sel.value;
+    await api('PATCH','expenses',{gubun:val},`?id=eq.${id}`);
+    const exp = expenses.find(e=>e.id===id); if(exp) exp.gubun=val;
+    renderLedger();
+  };
+  sel.onblur = () => setTimeout(()=>renderLedger(), 150);
+}
+
+// 단축키 - / + 로 구분 변경
+function handleGubunKey(event, idx, sel) {
+  if (event.key === '-') { event.preventDefault(); sel.value='expense'; updatePending(idx,'type','expense'); }
+  if (event.key === '+') { event.preventDefault(); sel.value='income'; updatePending(idx,'type','income'); }
 }
 
 function populateCategorySelects() {
