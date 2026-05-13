@@ -337,7 +337,7 @@ td.amt-inc{color:var(--c-income);font-weight:600}
 <div id="layout" style="display:none">
 <aside id="sidebar">
   <div id="sidebar-top">
-    <div id="sidebar-logo"><i class="ti ti-building-school" style="color:var(--c-accent)"></i> JLS 운영비 2.0</div>
+    <div id="sidebar-logo"><i class="ti ti-building-school" style="color:var(--c-accent)"></i> JLS 운영비</div>
     <select id="branch-sel" onchange="changeBranch(this.value)"></select>
     <div id="sidebar-user">
       <span id="role-badge-side"></span>
@@ -454,18 +454,18 @@ td.amt-inc{color:var(--c-income);font-weight:600}
                 <!-- 파일명 -->
                 <div id="receipt-filename" style="font-size:11px;color:var(--text2);display:none"></div>
                 <!-- 1줄: 자동입력 + 품목분리 -->
-                <div id="analyze-btns" style="display:none;gap:6px">
-                  <button type="button" id="analyze-btn" onclick="analyzeReceipt('single')" style="font-size:12px;color:#fff;background:var(--c-primary);border:none;border-radius:6px;padding:6px 14px;cursor:pointer;display:flex;align-items:center;gap:4px;flex:1;justify-content:center"><i class="ti ti-sparkles" style="font-size:13px"></i> 자동입력</button>
-                  <button type="button" id="analyze-multi-btn" onclick="analyzeReceipt('multi')" style="font-size:12px;color:#fff;background:#1D9E75;border:none;border-radius:6px;padding:6px 14px;cursor:pointer;display:flex;align-items:center;gap:4px;flex:1;justify-content:center"><i class="ti ti-list-details" style="font-size:13px"></i> 품목분리</button>
+                <div id="analyze-btns" style="display:none;gap:5px">
+                  <button type="button" id="analyze-btn" onclick="analyzeReceipt('single')" style="font-size:11px;color:#fff;background:var(--c-primary);border:none;border-radius:6px;padding:6px 0;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:3px;flex:1;white-space:nowrap"><i class="ti ti-sparkles" style="font-size:12px"></i> 자동입력</button>
+                  <button type="button" id="analyze-multi-btn" onclick="analyzeReceipt('multi')" style="font-size:11px;color:#fff;background:#1D9E75;border:none;border-radius:6px;padding:6px 0;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:3px;flex:1;white-space:nowrap"><i class="ti ti-list-details" style="font-size:12px"></i> 품목분리</button>
                 </div>
                 <!-- 2줄: 미리보기 + 삭제 -->
-                <div id="receipt-preview" style="display:none;gap:6px">
-                  <button type="button" onclick="showReceiptPreview()" style="font-size:12px;color:var(--c-primary);background:#E8F0FA;border:none;border-radius:6px;padding:6px 14px;cursor:pointer;display:flex;align-items:center;gap:4px;flex:1;justify-content:center"><i class="ti ti-eye" style="font-size:13px"></i> 미리보기</button>
-                  <button type="button" onclick="clearReceipt()" style="font-size:12px;color:var(--c-accent);background:#FEF0EC;border:none;border-radius:6px;padding:6px 14px;cursor:pointer;display:flex;align-items:center;gap:4px;flex:1;justify-content:center"><i class="ti ti-trash" style="font-size:13px"></i> 삭제</button>
+                <div id="receipt-action-btns" style="display:none;gap:5px">
+                  <button type="button" onclick="showReceiptPreview()" style="font-size:11px;color:var(--c-primary);background:#E8F0FA;border:none;border-radius:6px;padding:6px 0;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:3px;flex:1;white-space:nowrap"><i class="ti ti-eye" style="font-size:12px"></i> 미리보기</button>
+                  <button type="button" onclick="clearReceipt()" style="font-size:11px;color:var(--c-accent);background:#FEF0EC;border:none;border-radius:6px;padding:6px 0;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:3px;flex:1;white-space:nowrap"><i class="ti ti-trash" style="font-size:12px"></i> 삭제</button>
                 </div>
               </div>
             </div>
-            <div class="fgroup"><label>적요</label><textarea id="f-memo-in" rows="2" placeholder="거래 내용 메모 (소모품명 포함 시 주기 분석에 활용됨)"></textarea></div>
+                        <div class="fgroup"><label>적요</label><textarea id="f-memo-in" rows="2" placeholder="거래 내용 메모 (소모품명 포함 시 주기 분석에 활용됨)"></textarea></div>
             <!-- 품목분리 결과 -->
             <div id="multi-items-box" style="display:none;margin-top:12px;border:1px solid var(--c-income);border-radius:8px;overflow:hidden">
               <div style="background:#E1F5EE;padding:8px 12px;display:flex;align-items:center;justify-content:space-between">
