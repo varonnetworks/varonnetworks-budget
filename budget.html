@@ -253,7 +253,7 @@ td.amt-inc{color:var(--c-income);font-weight:600}
 
 <div id="login-screen">
   <div class="login-card">
-    <div class="login-logo"><i class="ti ti-building-school" style="color:var(--c-accent)"></i> JLS 운영비 관리 1.0</div>
+    <div class="login-logo"><i class="ti ti-building-school" style="color:var(--c-accent)"></i> JLS 운영비 관리</div>
     <div class="login-sub">계정을 입력하여 로그인하세요</div>
     <div class="login-field"><label>아이디</label><input id="lid" type="text" placeholder="아이디"/></div>
     <div class="login-field"><label>비밀번호</label><input id="lpw" type="password" placeholder="비밀번호" onkeydown="if(event.key==='Enter')doLogin()"/></div>
@@ -339,7 +339,7 @@ td.amt-inc{color:var(--c-income);font-weight:600}
 <div id="layout" style="display:none">
 <aside id="sidebar">
   <div id="sidebar-top">
-    <div id="sidebar-logo"><i class="ti ti-building-school" style="color:var(--c-accent)"></i> JLS 운영비 1.0</div>
+    <div id="sidebar-logo"><i class="ti ti-building-school" style="color:var(--c-accent)"></i> JLS 운영비</div>
     <select id="branch-sel" onchange="changeBranch(this.value)"></select>
     <div id="sidebar-user">
       <span id="role-badge-side"></span>
@@ -511,6 +511,8 @@ td.amt-inc{color:var(--c-income);font-weight:600}
               <div class="ref-item" onclick="selectAcctFromRef('834','판매촉진비')"><span class="ref-code">834</span><span class="ref-name">판매촉진비</span><span class="ref-desc">사전 공지된 우수반 포상 음식</span></div>
               <div class="ref-item" onclick="selectAcctFromRef('841','행사비')"><span class="ref-code">841</span><span class="ref-name">행사비</span><span class="ref-desc">마켓데이·푸드데이 등 학원 행사</span></div>
               <div class="ref-item" onclick="selectAcctFromRef('842','기타잡비')"><span class="ref-code">842</span><span class="ref-name">기타잡비</span><span class="ref-desc">사진 인화·기타 소액 지출</span></div>
+              <div class="ref-item" onclick="selectAcctFromRef('824','운반비')"><span class="ref-code">824</span><span class="ref-name">운반비</span><span class="ref-desc">소포·택배 (답안지 등 물품 발송)</span></div>
+              <div class="ref-item" onclick="selectAcctFromRef('103','보통예금')"><span class="ref-code">103</span><span class="ref-name">보통예금</span><span class="ref-desc">본사 지원금·포상금 입금</span></div>
             </div>
           </div>
         </div>
