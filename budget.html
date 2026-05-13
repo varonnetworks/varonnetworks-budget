@@ -337,7 +337,7 @@ td.amt-inc{color:var(--c-income);font-weight:600}
 <div id="layout" style="display:none">
 <aside id="sidebar">
   <div id="sidebar-top">
-    <div id="sidebar-logo"><i class="ti ti-building-school" style="color:var(--c-accent)"></i> JLS 운영비</div>
+    <div id="sidebar-logo"><i class="ti ti-building-school" style="color:var(--c-accent)"></i> JLS 운영비 5.0</div>
     <select id="branch-sel" onchange="changeBranch(this.value)"></select>
     <div id="sidebar-user">
       <span id="role-badge-side"></span>
@@ -1003,16 +1003,16 @@ function clearReceipt(){
   document.getElementById('f-receipt').value='';
   document.getElementById('upload-label').textContent='클릭 또는 드래그 (JPG·PNG·PDF)';
   document.getElementById('upload-area').classList.remove('has-file');
-  document.getElementById('receipt-preview').style.display='none';
-  const abEl2=document.getElementById('analyze-btns');
-  if(abEl2) abEl2.style.display='none';
-  const fn2=document.getElementById('receipt-filename');
-  if(fn2){fn2.textContent='';fn2.style.display='none';}
-  document.getElementById('preview-side-img').style.display='none';
-  document.getElementById('preview-side-pdf').style.display='none';
-  document.getElementById('preview-side-del').style.display='none';
-  document.getElementById('preview-empty').style.display='flex';
+  const rp=document.getElementById('receipt-preview');
+  if(rp) rp.style.display='none';
+  const abEl=document.getElementById('analyze-btns');
+  if(abEl) abEl.style.display='none';
+  const acEl=document.getElementById('receipt-action-btns');
+  if(acEl) acEl.style.display='none';
+  const fn=document.getElementById('receipt-filename');
+  if(fn){fn.textContent='';fn.style.display='none';}
   if(window._pdfBlobUrl){URL.revokeObjectURL(window._pdfBlobUrl);window._pdfBlobUrl=null;}
+  if(window._previewBlobUrl){URL.revokeObjectURL(window._previewBlobUrl);window._previewBlobUrl=null;}
 }
 function showReceiptPreview(){
   const img=document.getElementById('receipt-img');
