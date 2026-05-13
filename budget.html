@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#1B5EAB">
-<title>JLS 운영비 관리 1.0</title>
+<title>JLS 운영비 관리</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -252,7 +252,7 @@ td.amt-inc{color:var(--c-income);font-weight:600}
 
 <div id="login-screen">
   <div class="login-card">
-    <div class="login-logo"><i class="ti ti-building-school" style="color:var(--c-accent)"></i> JLS 운영비 관리 1.0</div>
+    <div class="login-logo"><i class="ti ti-building-school" style="color:var(--c-accent)"></i> JLS 운영비 관리</div>
     <div class="login-sub">계정을 입력하여 로그인하세요</div>
     <div class="login-field"><label>아이디</label><input id="lid" type="text" placeholder="아이디"/></div>
     <div class="login-field"><label>비밀번호</label><input id="lpw" type="password" placeholder="비밀번호" onkeydown="if(event.key==='Enter')doLogin()"/></div>
@@ -338,7 +338,7 @@ td.amt-inc{color:var(--c-income);font-weight:600}
 <div id="layout" style="display:none">
 <aside id="sidebar">
   <div id="sidebar-top">
-    <div id="sidebar-logo"><i class="ti ti-building-school" style="color:var(--c-accent)"></i> JLS 운영비 1.0</div>
+    <div id="sidebar-logo"><i class="ti ti-building-school" style="color:var(--c-accent)"></i> JLS 운영비</div>
     <select id="branch-sel" onchange="changeBranch(this.value)"></select>
     <div id="sidebar-user">
       <span id="role-badge-side"></span>
@@ -506,6 +506,11 @@ td.amt-inc{color:var(--c-income);font-weight:600}
   <div id="page-stats" class="page">
     <div class="page-header"><i class="ti ti-chart-pie" style="color:var(--c-primary)"></i> 통계분석</div>
     <div class="card">
+      <div class="filter-bar" style="margin-bottom:8px">
+        <button class="btn btn-ghost btn-sm" onclick="setStatsPeriod('prev')"><i class="ti ti-chevron-left"></i> 지난달</button>
+        <button class="btn btn-primary btn-sm" onclick="setStatsPeriod('this')">이번달</button>
+        <button class="btn btn-ghost btn-sm" onclick="setStatsPeriod('next')">다음달 <i class="ti ti-chevron-right"></i></button>
+      </div>
       <div class="filter-bar">
         <input type="date" id="s-from"><span style="color:var(--text3)">~</span><input type="date" id="s-to">
         <button class="btn btn-primary btn-sm" onclick="loadStats()">조회</button>
@@ -1039,6 +1044,20 @@ async function deleteEntry(id){
 }
 function closeModal(){document.getElementById('modal-overlay').classList.remove('open')}
 document.getElementById('modal-overlay').addEventListener('click',function(e){if(e.target===this)closeModal()});
+function setStatsPeriod(dir){
+  const now=new Date();
+  let y=now.getFullYear(),m=now.getMonth();
+  if(dir==='prev') m-=1;
+  if(dir==='next') m+=1;
+  if(m<0){m=11;y--;}
+  if(m>11){m=0;y++;}
+  const mm=String(m+1).padStart(2,'0');
+  const last=new Date(y,m+1,0).getDate().toString().padStart(2,'0');
+  document.getElementById('s-from').value=`${y}-${mm}-01`;
+  document.getElementById('s-to').value=`${y}-${mm}-${last}`;
+  loadStats();
+}
+
 async function loadStats(){
   const from=document.getElementById('s-from')?.value;
   const to=document.getElementById('s-to')?.value;
@@ -1060,29 +1079,63 @@ async function loadStats(){
   const colors=['#185FA5','#1D9E75','#BA7517','#A32D2D','#534AB7','#0F6E56','#D85A30','#3B6D11','#854F0B','#993556'];
   // 통계용 entries 저장
   window._statsEntries=entries;
+
+  // 소모품비 소분류 분석
+  const sub830={};
+  entries.filter(e=>e.kind==='지출'&&e.code==='830').forEach(e=>{
+    const key=e.sub_acct||'미분류';
+    sub830[key]=(sub830[key]||0)+e.amt;
+  });
+  const hasSub=Object.keys(sub830).length>0;
+
+  // 소모품비를 소분류로 분리해서 차트 생성
+  let chartEntries=[...sorted];
+  if(hasSub){
+    // 소모품비 항목을 소분류로 교체
+    chartEntries=sorted.filter(([name])=>name!=='소모품비');
+    const subOrder=['인쇄·출력용품','위생·생활용품','사무용품','수업용품','기타소모품','미분류'];
+    subOrder.forEach(sname=>{
+      if(sub830[sname]) chartEntries.push([`소모품비 > ${sname}`,sub830[sname]]);
+    });
+    chartEntries.sort((a,b)=>b[1]-a[1]);
+    chartEntries=chartEntries.slice(0,12);
+  }
+  const maxVal2=chartEntries[0]?chartEntries[0][1]:1;
+
   document.getElementById('stats-charts').innerHTML=`
-    <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:10px">계정과목별 지출 TOP 10 <span style="font-size:10px;color:var(--text3);font-weight:400">막대 클릭 시 상세내역</span></div>
-    <div class="chart-bar-wrap">${sorted.map(([name,val],i)=>`
-      <div class="bar-row" onclick="showStatsDetail('${name}')" style="cursor:pointer" title="${name} 상세보기">
-        <div class="bar-label" title="${name}">${name}</div>
-        <div class="bar-track"><div class="bar-fill" style="width:${Math.round(val/maxVal*100)}%;background:${colors[i%colors.length]}"></div></div>
+    <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:10px">
+      계정과목별 지출 ${hasSub?'(소모품비 소분류 포함)':''} <span style="font-size:10px;color:var(--text3);font-weight:400">막대 클릭 시 상세내역</span>
+    </div>
+    <div class="chart-bar-wrap">${chartEntries.map(([name,val],i)=>{
+      const isSub=name.startsWith('소모품비 >');
+      const dispName=isSub?name.replace('소모품비 > ','　└ '):name;
+      return `<div class="bar-row" onclick="showStatsDetail('${name}')" style="cursor:pointer;${isSub?'opacity:0.85':''}" title="${name} 상세보기">
+        <div class="bar-label" title="${dispName}" style="${isSub?'font-size:11px;color:var(--c-primary)':''}">${dispName}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${Math.round(val/maxVal2*100)}%;background:${isSub?'#4A90D9':colors[i%colors.length]}"></div></div>
         <div class="bar-amt">${val.toLocaleString()}원</div>
-      </div>`).join('')}${sorted.length===0?'<div class="empty">데이터 없음</div>':''}</div>`;
+      </div>`;
+    }).join('')}${chartEntries.length===0?'<div class="empty">데이터 없음</div>':''}</div>`;
 }
 function showStatsDetail(acctName){
-  const entries=(window._statsEntries||[]).filter(e=>e.kind==='지출'&&e.acct===acctName);
+  const isSub=acctName.startsWith('소모품비 > ');
+  const subName=isSub?acctName.replace('소모품비 > ',''):'';
+  const entries=(window._statsEntries||[]).filter(e=>{
+    if(e.kind!=='지출') return false;
+    if(isSub) return e.code==='830'&&(e.sub_acct===subName||(subName==='미분류'&&!e.sub_acct));
+    return e.acct===acctName;
+  });
   entries.sort((a,b)=>b.date.localeCompare(a.date));
   const tbody=document.getElementById('stats-detail-body');
   tbody.innerHTML=entries.map(e=>`
     <tr>
       <td>${e.date}</td>
-      <td>${e.vendor||'-'}</td>
+      <td>${e.sub_acct?`<span class="tag tag-acct" style="font-size:10px">${e.sub_acct}</span>`:''} ${e.vendor||'-'}</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.memo||'-'}</td>
       <td class="amt-exp" style="text-align:right">-${e.amt.toLocaleString()}원</td>
     </tr>`).join('');
   const total=entries.reduce((s,e)=>s+e.amt,0);
   document.getElementById('stats-detail-title').innerHTML=
-    `<span class="tag tag-acct">${acctName}</span> 상세내역 · ${entries.length}건 · 합계 <span style="color:var(--c-expense)">${total.toLocaleString()}원</span>`;
+    `<span class="tag tag-acct">${isSub?'소모품비':acctName}</span>${isSub?` <span style="font-size:11px;color:var(--c-primary)">› ${subName}</span>`:''} 상세내역 · ${entries.length}건 · 합계 <span style="color:var(--c-expense)">${total.toLocaleString()}원</span>`;
   const detail=document.getElementById('stats-detail');
   detail.style.display='block';
   detail.scrollIntoView({behavior:'smooth',block:'nearest'});
