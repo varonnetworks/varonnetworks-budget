@@ -74,12 +74,12 @@ td.amt-inc{color:var(--c-income);font-weight:600}
 .inline-form{background:#F0F7FF;border:1.5px dashed var(--c-primary);border-radius:10px;padding:1rem}
 .ref-table-box{background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px;font-size:11px;position:sticky;top:100px}
 .ref-table-box .ref-title{font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px;display:flex;align-items:center;gap:5px}
-.ref-grid{display:grid;grid-template-columns:1fr;gap:4px}
-.ref-item{padding:7px 10px;border-radius:8px;cursor:pointer;border:1px solid var(--border);transition:background 0.12s;display:flex;flex-direction:row;align-items:center;gap:8px}
+.ref-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.ref-item{padding:8px 10px;border-radius:8px;cursor:pointer;border:1px solid var(--border);transition:background 0.12s;display:flex;flex-direction:column;gap:3px}
 .ref-item:hover{background:#EEF4FF;border-color:var(--c-primary)}
-.ref-code{font-size:11px;font-weight:700;color:var(--c-primary);width:28px;flex-shrink:0}
-.ref-name{font-size:12px;font-weight:700;color:var(--text);width:72px;flex-shrink:0}
-.ref-desc{font-size:11px;color:var(--text3);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ref-code{font-size:11px;font-weight:700;color:var(--c-primary)}
+.ref-name{font-size:13px;font-weight:700;color:var(--text)}
+.ref-desc{font-size:11px;color:var(--text2);line-height:1.3}
 .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:10px}
 .fgroup{display:flex;flex-direction:column;gap:4px}
 .fgroup label{font-size:11px;color:var(--text2);font-weight:600}
@@ -394,14 +394,6 @@ td.amt-inc{color:var(--c-income);font-weight:600}
 
       <div id="form-area" style="display:none">
         <div class="form-with-ref">
-<img id="preview-side-img" src="" alt="영수증 미리보기" style="display:none" onclick="showReceiptPreview()">
-            <a id="preview-side-pdf" href="#" target="_blank" class="pdf-link" style="display:none">
-              <i class="ti ti-file-type-pdf"></i>
-              <span id="preview-side-pdf-name"></span>
-              <span style="font-size:10px;color:var(--text3)">클릭하여 열기</span>
-            </a>
-            <button type="button" id="preview-side-del" style="display:none;font-size:11px;color:var(--c-accent);background:none;border:none;cursor:pointer" onclick="clearReceipt()"><i class="ti ti-trash"></i> 삭제</button>
-          </div>
           <div class="inline-form">
             <div class="form-grid">
               <div class="fgroup">
