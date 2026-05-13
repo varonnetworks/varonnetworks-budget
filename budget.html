@@ -472,7 +472,8 @@ td.amt-inc{color:var(--c-income);font-weight:600}
                   <div>
                     <div id="receipt-filename" style="font-size:11px;color:var(--text2);margin-bottom:3px"></div>
                     <div style="display:flex;gap:6px;align-items:center">
-                      <button type="button" id="analyze-btn" onclick="analyzeReceipt()" style="font-size:11px;color:#fff;background:var(--c-primary);border:none;border-radius:5px;padding:3px 8px;cursor:pointer;display:flex;align-items:center;gap:3px"><i class="ti ti-sparkles" style="font-size:12px"></i> 자동입력</button>
+                      <button type="button" id="analyze-btn" onclick="analyzeReceipt('single')" style="font-size:11px;color:#fff;background:var(--c-primary);border:none;border-radius:5px;padding:3px 8px;cursor:pointer;display:flex;align-items:center;gap:3px"><i class="ti ti-sparkles" style="font-size:12px"></i> 자동입력</button>
+                      <button type="button" id="analyze-multi-btn" onclick="analyzeReceipt('multi')" style="font-size:11px;color:#fff;background:#1D9E75;border:none;border-radius:5px;padding:3px 8px;cursor:pointer;display:flex;align-items:center;gap:3px"><i class="ti ti-list-details" style="font-size:12px"></i> 품목분리</button>
                       <button type="button" style="font-size:11px;color:var(--c-accent);background:none;border:none;cursor:pointer;padding:0" onclick="clearReceipt()">삭제</button>
                     </div>
                   </div>
@@ -480,6 +481,18 @@ td.amt-inc{color:var(--c-income);font-weight:600}
               </div>
             </div>
             <div class="fgroup"><label>적요</label><textarea id="f-memo-in" rows="2" placeholder="거래 내용 메모 (소모품명 포함 시 주기 분석에 활용됨)"></textarea></div>
+            <!-- 품목분리 결과 -->
+            <div id="multi-items-box" style="display:none;margin-top:12px;border:1px solid var(--c-income);border-radius:8px;overflow:hidden">
+              <div style="background:#E1F5EE;padding:8px 12px;display:flex;align-items:center;justify-content:space-between">
+                <span style="font-size:12px;font-weight:700;color:#0F6E56"><i class="ti ti-list-details"></i> 품목별 내역 — 계정과목 선택 후 전체저장</span>
+                <button type="button" onclick="clearMultiItems()" style="background:none;border:none;cursor:pointer;font-size:12px;color:var(--text3)"><i class="ti ti-x"></i></button>
+              </div>
+              <div id="multi-items-list" style="padding:8px"></div>
+              <div style="padding:8px 12px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px">
+                <button class="btn btn-ghost btn-sm" onclick="clearMultiItems()">취소</button>
+                <button class="btn btn-primary btn-sm" id="save-multi-btn" onclick="saveMultiItems()"><i class="ti ti-check"></i> 전체 저장</button>
+              </div>
+            </div>
             <div class="form-actions">
               <button class="btn btn-ghost" onclick="toggleForm()">취소</button>
               <button class="btn btn-primary" id="save-btn" onclick="saveEntry()"><i class="ti ti-check"></i> 저장</button>
@@ -820,57 +833,153 @@ function handleDrop(e){
   const file=e.dataTransfer.files[0];if(file)processFile(file);
 }
 function previewReceipt(inp){const file=inp.files[0];if(file)processFile(file)}
-async function analyzeReceipt(){
+async function getBase64(){
+  const reader=new FileReader();
+  return new Promise(resolve=>{
+    reader.onload=e=>resolve(e.target.result.split(',')[1]);
+    reader.readAsDataURL(pendingFile);
+  });
+}
+
+async function analyzeReceipt(mode='single'){
   if(!pendingFile){toast('첨부된 파일이 없습니다');return}
-  const btn=document.getElementById('analyze-btn');
+  const btnId=mode==='single'?'analyze-btn':'analyze-multi-btn';
+  const btn=document.getElementById(btnId);
+  const origHtml=btn.innerHTML;
   btn.innerHTML='<i class="ti ti-loader" style="font-size:12px"></i> 분석 중...';
   btn.disabled=true;
-
   try{
-    let body={};
-    if(pendingFile.type==='application/pdf'){
-      // PDF 텍스트 추출
-      const arrayBuf=await pendingFile.arrayBuffer();
-      const uint8=new Uint8Array(arrayBuf);
-      let binary='';
-      uint8.forEach(b=>binary+=String.fromCharCode(b));
-      // 간단한 텍스트 추출 (PDF 텍스트 레이어)
-      const pdfStr=binary;
-      // BT...ET 블록에서 텍스트 추출
-      const textMatches=pdfStr.match(/\(([^\)]{1,200})\)\s*Tj/g)||[];
-      const extracted=textMatches.map(m=>m.replace(/^\(/,'').replace(/\)\s*Tj$/,'')).join(' ');
-      body={pdfText: extracted||binary.replace(/[^ -~가-힣ㄱ-ㅣ]/g,' ').slice(0,3000)};
-    } else {
-      // 이미지 base64
-      const reader=new FileReader();
-      const base64=await new Promise(resolve=>{
-        reader.onload=e=>resolve(e.target.result.split(',')[1]);
-        reader.readAsDataURL(pendingFile);
-      });
-      body={image:base64, mimeType:pendingFile.type};
-    }
-
-    const res=await fetch('/api/analyze',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify(body)
-    });
+    const base64=await getBase64();
+    const body={image:base64,mimeType:pendingFile.type==='application/pdf'?'application/pdf':pendingFile.type,mode};
+    const res=await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
     const data=await res.json();
-
     if(data.error){toast('분석 오류: '+data.error);return}
-
-    // 폼에 자동입력
-    if(data.date) document.getElementById('f-date').value=data.date;
-    if(data.amount&&data.amount>0) document.getElementById('f-amt').value=data.amount;
-    if(data.vendor) document.getElementById('f-vendor').value=data.vendor;
-    if(data.memo) document.getElementById('f-memo-in').value=data.memo;
-    toast('✓ 자동입력 완료! 내용을 확인해주세요');
+    if(mode==='single'){
+      if(data.date) document.getElementById('f-date').value=data.date;
+      if(data.amount&&data.amount>0) document.getElementById('f-amt').value=data.amount;
+      if(data.vendor) document.getElementById('f-vendor').value=data.vendor;
+      if(data.memo) document.getElementById('f-memo-in').value=data.memo;
+      toast('✓ 자동입력 완료! 내용을 확인해주세요');
+    } else {
+      renderMultiItems(data);
+    }
   } catch(e){
     toast('분석 오류: '+e.message);
   } finally {
-    btn.innerHTML='<i class="ti ti-sparkles" style="font-size:12px"></i> 자동입력';
+    btn.innerHTML=origHtml;
     btn.disabled=false;
   }
+}
+
+let multiItemsData=null;
+
+function renderMultiItems(data){
+  multiItemsData=data;
+  const items=data.items||[];
+  if(items.length===0){toast('품목을 찾을 수 없습니다');return}
+  const acctOpts=ACCOUNTS.map(a=>`<option value="${a.code}">${a.code} ${a.name}</option>`).join('');
+  const subOpts=SUB_ACCOUNTS['830'].map(s=>`<option value="${s.code}">${s.name}</option>`).join('');
+  const list=document.getElementById('multi-items-list');
+  list.innerHTML=`
+    <div style="font-size:11px;color:var(--text3);margin-bottom:8px">
+      날짜: <b>${data.date||'미확인'}</b> · 거래처: <b>${data.vendor||'미확인'}</b>
+    </div>
+    <div style="overflow-x:auto">
+    <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:500px">
+      <thead><tr style="background:#F0F4FA">
+        <th style="padding:6px 8px;text-align:left;border-bottom:1px solid var(--border)">품목</th>
+        <th style="padding:6px 8px;text-align:center;border-bottom:1px solid var(--border);width:50px">수량</th>
+        <th style="padding:6px 8px;text-align:right;border-bottom:1px solid var(--border);width:80px">금액</th>
+        <th style="padding:6px 8px;text-align:left;border-bottom:1px solid var(--border);width:150px">계정과목</th>
+        <th style="padding:6px 8px;text-align:left;border-bottom:1px solid var(--border);width:110px">소분류</th>
+      </tr></thead>
+      <tbody>
+        ${items.map((item,i)=>`
+          <tr style="border-bottom:1px solid rgba(0,0,0,0.04)">
+            <td style="padding:5px 6px">
+              <input type="text" value="${(item.memo||'').replace(/"/g,'&quot;')}" id="mi-memo-${i}"
+                style="width:100%;border:1px solid var(--border);border-radius:4px;padding:4px 6px;font-size:12px">
+            </td>
+            <td style="padding:5px 4px">
+              <input type="number" value="${item.qty||1}" id="mi-qty-${i}" min="1"
+                style="width:44px;border:1px solid var(--border);border-radius:4px;padding:4px 4px;font-size:12px;text-align:center">
+            </td>
+            <td style="padding:5px 4px">
+              <input type="number" value="${item.amount||0}" id="mi-amt-${i}"
+                style="width:76px;border:1px solid var(--border);border-radius:4px;padding:4px 4px;font-size:12px;text-align:right;${(item.amount||0)<0?'color:var(--c-income)':''}">
+            </td>
+            <td style="padding:5px 4px">
+              <select id="mi-acct-${i}" onchange="updateMiSub(${i})"
+                style="width:100%;border:1px solid var(--border);border-radius:4px;padding:4px 4px;font-size:11px">
+                ${acctOpts}
+              </select>
+            </td>
+            <td style="padding:5px 4px">
+              <select id="mi-sub-${i}"
+                style="width:100%;border:1px solid var(--border);border-radius:4px;padding:4px 4px;font-size:11px;display:none">
+                ${subOpts}
+              </select>
+            </td>
+          </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>
+    <div style="margin-top:8px;font-size:12px;color:var(--text2);text-align:right">
+      합계: <b style="color:var(--c-expense)">${items.reduce((s,i)=>s+(i.amount||0),0).toLocaleString()}원</b>
+    </div>`;
+  document.getElementById('multi-items-box').style.display='block';
+  document.getElementById('multi-items-box').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function updateMiSub(i){
+  const code=document.getElementById(`mi-acct-${i}`).value;
+  const subSel=document.getElementById(`mi-sub-${i}`);
+  subSel.style.display=code==='830'?'block':'none';
+}
+
+function clearMultiItems(){
+  multiItemsData=null;
+  document.getElementById('multi-items-box').style.display='none';
+}
+
+async function saveMultiItems(){
+  if(!multiItemsData) return;
+  const date=multiItemsData.date||document.getElementById('f-date').value;
+  const vendor=multiItemsData.vendor||document.getElementById('f-vendor').value;
+  const items=multiItemsData.items||[];
+  if(!date){toast('날짜를 확인해주세요');return}
+  const btn=document.getElementById('save-multi-btn');
+  btn.disabled=true;btn.textContent='저장 중...';showLoading(true);
+  // 영수증 업로드
+  let receipt_url=null;
+  if(pendingFile){
+    const ext=pendingFile.name.split('.').pop();
+    const branchMap={'남동탄 분원':'namdongtan','수원 분원':'suwon','장안 분원':'jangan','서수원 분원':'seosuwon','운정 1분원':'unjeong1','운정 2분원':'unjeong2','테스트JLS':'test'};
+    const safeBranch=branchMap[curBranch]||curBranch.replace(/[^a-zA-Z0-9_-]/g,'_');
+    const path=`${safeBranch}/${date}_${Date.now()}.${ext}`;
+    const{data:upData,error:upErr}=await sb.storage.from('receipts').upload(path,pendingFile,{upsert:true});
+    if(!upErr){const{data:urlData}=sb.storage.from('receipts').getPublicUrl(path);receipt_url=urlData.publicUrl;}
+  }
+  let saved=0,failed=0;
+  for(let i=0;i<items.length;i++){
+    const memo=document.getElementById(`mi-memo-${i}`)?.value||'';
+    const amt=parseInt(document.getElementById(`mi-amt-${i}`)?.value)||0;
+    const qty=parseInt(document.getElementById(`mi-qty-${i}`)?.value)||1;
+    const code=document.getElementById(`mi-acct-${i}`)?.value||'842';
+    const acct=ACCOUNTS.find(a=>a.code===code)?.name||'';
+    const subSel=document.getElementById(`mi-sub-${i}`);
+    const sub_code=code==='830'&&subSel?subSel.value:'';
+    const sub_acct=code==='830'&&subSel?SUB_ACCOUNTS['830'].find(s=>s.code===subSel.value)?.name||'':'';
+    if(amt===0) continue;
+    const payload={branch:curBranch,date,kind:'지출',code,acct,sub_code,sub_acct,vendor,memo,amt:Math.abs(amt),receipt_url};
+    if(code==='830') payload.qty=qty;
+    const{error}=await sb.from('entries').insert(payload);
+    if(error) failed++; else saved++;
+  }
+  showLoading(false);
+  btn.disabled=false;btn.innerHTML='<i class="ti ti-check"></i> 전체 저장';
+  toast(failed>0?`${saved}건 저장, ${failed}건 실패`:`✓ ${saved}건 저장 완료`);
+  clearMultiItems();toggleForm();loadEntries();
 }
 
 function processFile(file){
