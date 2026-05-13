@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#1B5EAB">
-<title>JLS 운영비 관리</title>
+<title>JLS 운영비 관리 1.0</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -252,7 +252,7 @@ td.amt-inc{color:var(--c-income);font-weight:600}
 
 <div id="login-screen">
   <div class="login-card">
-    <div class="login-logo"><i class="ti ti-building-school" style="color:var(--c-accent)"></i> JLS 운영비 관리</div>
+    <div class="login-logo"><i class="ti ti-building-school" style="color:var(--c-accent)"></i> JLS 운영비 관리 1.0</div>
     <div class="login-sub">계정을 입력하여 로그인하세요</div>
     <div class="login-field"><label>아이디</label><input id="lid" type="text" placeholder="아이디"/></div>
     <div class="login-field"><label>비밀번호</label><input id="lpw" type="password" placeholder="비밀번호" onkeydown="if(event.key==='Enter')doLogin()"/></div>
@@ -338,7 +338,7 @@ td.amt-inc{color:var(--c-income);font-weight:600}
 <div id="layout" style="display:none">
 <aside id="sidebar">
   <div id="sidebar-top">
-    <div id="sidebar-logo"><i class="ti ti-building-school" style="color:var(--c-accent)"></i> JLS 운영비</div>
+    <div id="sidebar-logo"><i class="ti ti-building-school" style="color:var(--c-accent)"></i> JLS 운영비 1.0</div>
     <select id="branch-sel" onchange="changeBranch(this.value)"></select>
     <div id="sidebar-user">
       <span id="role-badge-side"></span>
@@ -588,6 +588,15 @@ const ACCOUNTS=[
   {code:'103',name:'보통예금'},{code:'253',name:'미지급금'},{code:'260',name:'단기차입금'},
   {code:'901',name:'이자수익'},{code:'930',name:'잡이익'},{code:'931',name:'이자비용'},{code:'960',name:'잡손실'}
 ];
+const SUB_ACCOUNTS={
+  '830':[
+    {code:'830-1',name:'인쇄·출력용품',desc:'복사용지(A4·B5), 라벨지, 바코드용지'},
+    {code:'830-2',name:'위생·생활용품',desc:'정수기컵, 점보롤'},
+    {code:'830-3',name:'사무용품',desc:'OPP봉투, 테이프, 볼펜, 채점펜, 색연필'},
+    {code:'830-4',name:'수업용품',desc:'뿅망치 등 수업 소모품'},
+    {code:'830-5',name:'기타소모품',desc:'건전지, 전구, 마우스·키보드 등'},
+  ]
+};
 const BRANCHES=['남동탄 분원','수원 분원','장안 분원','서수원 분원','운정 1분원','운정 2분원'];
 let curUser=null,curBranch=null,allEntries=[],receiptB64=null,pendingFile=null,chatHistory=[];
 
