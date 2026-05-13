@@ -340,7 +340,7 @@ td.amt-inc{color:var(--c-income);font-weight:600}
 <div id="layout" style="display:none">
 <aside id="sidebar">
   <div id="sidebar-top">
-    <div id="sidebar-logo"><i class="ti ti-building-school" style="color:var(--c-accent)"></i> JLS 운영비 1.0</div>
+    <div id="sidebar-logo"><i class="ti ti-building-school" style="color:var(--c-accent)"></i> JLS 운영비</div>
     <select id="branch-sel" onchange="changeBranch(this.value)"></select>
     <div id="sidebar-user">
       <span id="role-badge-side"></span>
@@ -384,7 +384,7 @@ td.amt-inc{color:var(--c-income);font-weight:600}
         <button class="btn btn-primary btn-sm" onclick="setLedgerPeriod('this')">이번달</button>
         <button class="btn btn-ghost btn-sm" onclick="setLedgerPeriod('next')">다음달 <i class="ti ti-chevron-right"></i></button>
       </div>
-      <div class="filter-bar">
+      <div class="filter-bar" id="ledger-filter-bar">
         <input type="date" id="f-from" onchange="loadEntries()">
         <span style="color:var(--text3)">~</span>
         <input type="date" id="f-to" onchange="loadEntries()">
@@ -462,7 +462,7 @@ td.amt-inc{color:var(--c-income);font-weight:600}
                   <button type="button" id="analyze-multi-btn" onclick="analyzeReceipt('multi')" style="font-size:12px;color:#fff;background:#1D9E75;border:none;border-radius:6px;padding:6px 14px;cursor:pointer;display:flex;align-items:center;gap:4px;flex:1;justify-content:center"><i class="ti ti-list-details" style="font-size:13px"></i> 품목분리</button>
                 </div>
                 <!-- 2줄: 미리보기 + 삭제 -->
-                <div id="receipt-preview" style="display:none;gap:6px">
+                <div id="receipt-action-btns" style="display:none;gap:6px">
                   <button type="button" onclick="showReceiptPreview()" style="font-size:12px;color:var(--c-primary);background:#E8F0FA;border:none;border-radius:6px;padding:6px 14px;cursor:pointer;display:flex;align-items:center;gap:4px;flex:1;justify-content:center"><i class="ti ti-eye" style="font-size:13px"></i> 미리보기</button>
                   <button type="button" onclick="clearReceipt()" style="font-size:12px;color:var(--c-accent);background:#FEF0EC;border:none;border-radius:6px;padding:6px 14px;cursor:pointer;display:flex;align-items:center;gap:4px;flex:1;justify-content:center"><i class="ti ti-trash" style="font-size:13px"></i> 삭제</button>
                 </div>
@@ -674,7 +674,12 @@ function initApp(){
   const mh=document.getElementById('mobile-header');
   if(mh&&window.innerWidth<=768) mh.style.display='flex';
   // 모바일일 때 content 상단 여백
-  if(window.innerWidth<=768) document.getElementById('content').style.paddingTop='60px';
+  if(window.innerWidth<=768){
+    const mob=document.getElementById('mobile-action-bar');
+    const pc=document.getElementById('pc-action-bar');
+    if(mob) mob.style.display='flex';
+    if(pc) pc.style.display='none';
+  }
   initDates();populateFilterSelect();loadEntries();renderShortcuts();
   document.addEventListener('keydown',globalKey);
 }
@@ -692,6 +697,14 @@ function initDates(){
   ['f-to','s-to','ab-to'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=end});
   document.getElementById('f-date').value=now.toISOString().split('T')[0];
 }
+function toggleMobileFilter(){
+  const fb=document.getElementById('ledger-filter-bar');
+  if(!fb)return;
+  fb.classList.toggle('mobile-open');
+  const btn=document.getElementById('mobile-filter-btn');
+  if(btn) btn.innerHTML=fb.classList.contains('mobile-open')?'<i class="ti ti-x"></i> 닫기':'<i class="ti ti-filter"></i> 필터';
+}
+
 function changeBranch(b){
   curBranch=b;
   document.getElementById('branch-sel').value=b;
@@ -1001,7 +1014,7 @@ function clearReceipt(){
   document.getElementById('f-receipt').value='';
   document.getElementById('upload-label').textContent='클릭 또는 드래그 (JPG·PNG·PDF)';
   document.getElementById('upload-area').classList.remove('has-file');
-  const rp=document.getElementById('receipt-preview');
+  const rp=document.getElementById('receipt-action-btns');
   if(rp) rp.style.display='none';
   const abEl=document.getElementById('analyze-btns');
   if(abEl) abEl.style.display='none';
@@ -1079,27 +1092,52 @@ function renderLedger(data){
   const tbody=document.getElementById('ledger-body');
   tbody.innerHTML='';
   document.getElementById('ledger-empty').style.display=data.length?'none':'block';
+  const isMobile=window.innerWidth<=768;
   data.forEach(e=>{
     const isPdf=e.receipt_url&&(e.receipt_url.endsWith('.pdf')||e.receipt_url.includes('.pdf?'));
     const receiptCell=e.receipt_url
       ?(isPdf?`<span style="font-size:11px;color:var(--c-primary);cursor:pointer" onclick="showReceiptRow(${e.id})"><i class="ti ti-file-type-pdf"></i> PDF</span>`
         :`<img src="${e.receipt_url}" style="width:36px;height:36px;border-radius:6px;object-fit:cover;cursor:pointer;border:1px solid var(--border)" onclick="showReceiptRow(${e.id})" alt="영수증">`)
-      :'<div style="width:36px;height:36px;border-radius:6px;background:#F0F4FA;display:flex;align-items:center;justify-content:center;color:var(--text3)"><i class="ti ti-photo-off" style="font-size:14px"></i></div>';
+      :'';
     const tr=document.createElement('tr');
-    tr.innerHTML=`
-      <td>${e.date}</td>
-      <td><span class="tag ${e.kind==='지출'?'tag-exp':'tag-inc'}">${e.kind}</span></td>
-      <td><span class="tag tag-acct">${e.code}</span> ${e.acct}</td>
-      <td style="font-size:11px;color:var(--text2)">${e.sub_acct||'-'}</td>
-      <td>${e.vendor||'-'}</td>
-      <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${e.memo||''}">${e.memo||'-'}</td>
-      <td style="text-align:center;color:var(--text2)">${e.qty||'-'}</td>
-      <td class="${e.kind==='지출'?'amt-exp':'amt-inc'}" style="text-align:right">${e.kind==='지출'?'-':'+'}<b>${e.amt.toLocaleString()}</b></td>
-      <td>${receiptCell}</td>
-      <td style="white-space:nowrap">
-        <button class="btn btn-ghost btn-sm" onclick="openEdit(${e.id})" style="padding:4px 8px;font-size:11px;margin-right:3px"><i class="ti ti-edit"></i></button>
-        <button class="btn btn-ghost btn-sm" onclick="deleteEntry(${e.id})" style="padding:4px 8px;font-size:11px;color:var(--c-accent)"><i class="ti ti-trash"></i></button>
-      </td>`;
+    if(isMobile){
+      tr.innerHTML=`
+        <td style="display:block;padding:0;border:none">
+          <div style="padding:12px 14px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+              <span style="font-size:12px;color:var(--text3)">${e.date}</span>
+              <span style="font-size:16px;font-weight:800;color:${e.kind==='지출'?'var(--c-expense)':'var(--c-income)'}">${e.kind==='지출'?'-':'+'}${e.amt.toLocaleString()}원</span>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px">
+              <span class="tag ${e.kind==='지출'?'tag-exp':'tag-inc'}">${e.kind}</span>
+              <span class="tag tag-acct">${e.code} ${e.acct}</span>
+              ${e.sub_acct?`<span class="tag" style="background:#F0F4FA;color:var(--text2)">${e.sub_acct}</span>`:''}
+            </div>
+            <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.memo||'(적요 없음)'}</div>
+            <div style="font-size:11px;color:var(--text3)">${[e.vendor,e.qty?'수량 '+e.qty:null].filter(Boolean).join(' · ')||''}</div>
+          </div>
+          <div style="display:flex;border-top:1px solid var(--border);padding:6px 10px;gap:6px;align-items:center">
+            <span style="flex:1;font-size:11px">${receiptCell}</span>
+            <button class="btn btn-ghost btn-sm" onclick="openEdit(${e.id})" style="padding:5px 14px;font-size:12px"><i class="ti ti-edit"></i> 수정</button>
+            <button class="btn btn-ghost btn-sm" onclick="deleteEntry(${e.id})" style="padding:5px 14px;font-size:12px;color:var(--c-accent)"><i class="ti ti-trash"></i> 삭제</button>
+          </div>
+        </td>`;
+    } else {
+      tr.innerHTML=`
+        <td data-label="날짜">${e.date}</td>
+        <td data-label="구분"><span class="tag ${e.kind==='지출'?'tag-exp':'tag-inc'}">${e.kind}</span></td>
+        <td data-label="계정"><span class="tag tag-acct">${e.code}</span> ${e.acct}</td>
+        <td data-label="소분류" style="font-size:11px;color:var(--text2)">${e.sub_acct||'-'}</td>
+        <td data-label="거래처">${e.vendor||'-'}</td>
+        <td data-label="적요" style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${e.memo||''}">${e.memo||'-'}</td>
+        <td data-label="수량" style="text-align:center;color:var(--text2)">${e.qty||'-'}</td>
+        <td data-label="금액" class="${e.kind==='지출'?'amt-exp':'amt-inc'}" style="text-align:right">${e.kind==='지출'?'-':'+'}<b>${e.amt.toLocaleString()}</b></td>
+        <td data-label="영수증">${receiptCell||'<div style="width:36px;height:36px;border-radius:6px;background:#F0F4FA;display:flex;align-items:center;justify-content:center;color:var(--text3)"><i class="ti ti-photo-off" style="font-size:14px"></i></div>'}</td>
+        <td style="white-space:nowrap">
+          <button class="btn btn-ghost btn-sm" onclick="openEdit(${e.id})" style="padding:4px 8px;font-size:11px;margin-right:3px"><i class="ti ti-edit"></i></button>
+          <button class="btn btn-ghost btn-sm" onclick="deleteEntry(${e.id})" style="padding:4px 8px;font-size:11px;color:var(--c-accent)"><i class="ti ti-trash"></i></button>
+        </td>`;
+    }
     tbody.appendChild(tr);
   });
 }
