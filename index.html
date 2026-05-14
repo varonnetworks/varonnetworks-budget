@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#1B5EAB">
-<title>JLS 운영비 관리</title>
+<title>JLS 운영비 1.0 관리</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -264,7 +264,7 @@ td.amt-inc{color:var(--c-income);font-weight:600}
 
 <div id="login-screen">
   <div class="login-card">
-    <div class="login-logo"><i class="ti ti-building-school" style="color:var(--c-accent)"></i> JLS 운영비 관리</div>
+    <div class="login-logo"><i class="ti ti-building-school" style="color:var(--c-accent)"></i> JLS 운영비 1.0 관리</div>
     <div class="login-sub">계정을 입력하여 로그인하세요</div>
     <div class="login-field"><label>아이디</label><input id="lid" type="text" placeholder="아이디"/></div>
     <div class="login-field"><label>비밀번호</label><input id="lpw" type="password" placeholder="비밀번호" onkeydown="if(event.key==='Enter')doLogin()"/></div>
@@ -350,7 +350,7 @@ td.amt-inc{color:var(--c-income);font-weight:600}
 <div id="layout" style="display:none">
 <aside id="sidebar">
   <div id="sidebar-top">
-    <div id="sidebar-logo"><i class="ti ti-building-school" style="color:var(--c-accent)"></i> JLS 운영비</div>
+    <div id="sidebar-logo"><i class="ti ti-building-school" style="color:var(--c-accent)"></i> JLS 운영비 1.0</div>
     <select id="branch-sel" onchange="changeBranch(this.value)"></select>
     <div id="sidebar-user">
       <span id="role-badge-side"></span>
@@ -385,24 +385,21 @@ td.amt-inc{color:var(--c-income);font-weight:600}
     <div class="page-header"><i class="ti ti-list-details" style="color:var(--c-primary)"></i> 거래내역</div>
     <div class="stat-grid" id="ledger-stats"></div>
 
-    <!-- 모바일 전용 필터 (카드 밖, 전체폭) -->
+    <!-- 모바일 전용 필터 -->
     <div id="mobile-filter-area" style="display:none;flex-direction:column;gap:8px;background:#fff;border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:10px 14px;margin-bottom:8px">
-      <!-- 1줄: 지난달/이번달/다음달 + 엑셀 + 내역추가 -->
       <div style="display:flex;gap:6px;align-items:center">
         <button class="btn btn-ghost btn-sm" style="flex:1;justify-content:center;white-space:nowrap;padding:7px 4px" onclick="setLedgerPeriod('prev')"><i class="ti ti-chevron-left"></i> 지난달</button>
         <button class="btn btn-primary btn-sm" style="flex:1;justify-content:center;white-space:nowrap;padding:7px 4px" onclick="setLedgerPeriod('this')">이번달</button>
         <button class="btn btn-ghost btn-sm" style="flex:1;justify-content:center;white-space:nowrap;padding:7px 4px" onclick="setLedgerPeriod('next')">다음달 <i class="ti ti-chevron-right"></i></button>
         <button class="btn btn-ghost btn-sm" style="flex-shrink:0;padding:7px 10px" onclick="exportExcel()"><i class="ti ti-download"></i></button>
-        <button class="btn btn-primary btn-sm" style="flex-shrink:0;white-space:nowrap;padding:7px 10px" onclick="toggleForm()"><i class="ti ti-plus"></i> 내역추가</button>
+        <button class="btn btn-primary btn-sm" style="flex-shrink:0;white-space:nowrap;padding:7px 10px" onclick="openMobileEntryModal()"><i class="ti ti-plus"></i> 내역추가</button>
       </div>
-      <!-- 2줄: 기간 + 지출/입금 필터 -->
       <div style="display:flex;align-items:center;gap:6px">
         <input type="date" id="f-from-m" onchange="syncMobileFilter()" style="flex:1;border:1px solid var(--border);border-radius:7px;padding:7px 6px;font-size:12px">
         <span style="color:var(--text3);flex-shrink:0">~</span>
         <input type="date" id="f-to-m" onchange="syncMobileFilter()" style="flex:1;border:1px solid var(--border);border-radius:7px;padding:7px 6px;font-size:12px">
         <select id="f-type-m" onchange="syncMobileFilter()" style="flex-shrink:0;border:1px solid var(--border);border-radius:7px;padding:7px 6px;font-size:12px"><option value="">전체</option><option value="지출">지출</option><option value="입금">입금</option></select>
       </div>
-      <!-- 3줄: 계정 + 적요검색 + 초기화 -->
       <div style="display:flex;gap:6px;align-items:center">
         <select id="f-acct-m" onchange="syncMobileFilter()" style="flex:1;border:1px solid var(--border);border-radius:7px;padding:7px 6px;font-size:12px"><option value="">계정 전체</option></select>
         <input type="text" id="f-memo-m" placeholder="적요검색" oninput="syncMobileFilter()" style="flex:1;border:1px solid var(--border);border-radius:7px;padding:7px 6px;font-size:12px">
@@ -410,154 +407,67 @@ td.amt-inc{color:var(--c-income);font-weight:600}
       </div>
     </div>
 
-    <div class="card" id="ledger-card">
-      <!-- PC 전용: 엑셀/내역추가 + 기간버튼 -->
-      <div id="pc-top-bar" style="display:flex;align-items:center;gap:8px;margin-bottom:1rem;flex-wrap:wrap">
-        <div id="pc-period-btns" style="display:flex;gap:6px">
-          <button class="btn btn-ghost btn-sm" onclick="setLedgerPeriod('prev')"><i class="ti ti-chevron-left"></i> 지난달</button>
-          <button class="btn btn-primary btn-sm" onclick="setLedgerPeriod('this')">이번달</button>
-          <button class="btn btn-ghost btn-sm" onclick="setLedgerPeriod('next')">다음달 <i class="ti ti-chevron-right"></i></button>
+    <!-- PC 전용 그리드 -->
+    <div id="pc-ledger-wrap" class="card" style="padding:0;overflow:hidden">
+      <!-- PC 툴바 -->
+      <div id="pc-top-bar" style="display:flex;align-items:center;gap:6px;padding:10px 14px;border-bottom:1px solid var(--border);flex-wrap:wrap">
+        <div style="display:flex;gap:5px;align-items:center">
+          <button class="btn btn-ghost btn-sm" onclick="setLedgerPeriod('prev')"><i class="ti ti-chevron-left"></i></button>
+          <select id="grid-year" onchange="loadEntries()" style="border:1px solid var(--border);border-radius:7px;padding:5px 8px;font-size:13px"></select>
+          <span style="color:var(--text2);font-size:13px">년</span>
+          <select id="grid-month" onchange="loadEntries()" style="border:1px solid var(--border);border-radius:7px;padding:5px 8px;font-size:13px">
+            <option value="00">전체</option>
+            <option value="01">1월</option><option value="02">2월</option><option value="03">3월</option>
+            <option value="04">4월</option><option value="05">5월</option><option value="06">6월</option>
+            <option value="07">7월</option><option value="08">8월</option><option value="09">9월</option>
+            <option value="10">10월</option><option value="11">11월</option><option value="12">12월</option>
+          </select>
+          <span style="color:var(--text2);font-size:13px">월</span>
+          <button class="btn btn-ghost btn-sm" onclick="setLedgerPeriod('next')"><i class="ti ti-chevron-right"></i></button>
         </div>
-        <div style="margin-left:auto;display:flex;gap:6px">
+        <select id="f-type" onchange="loadEntries()" style="border:1px solid var(--border);border-radius:7px;padding:5px 8px;font-size:13px">
+          <option value="">전체</option><option value="지출">지출</option><option value="입금">입금</option>
+        </select>
+        <input type="text" id="f-memo" placeholder="적요/거래처 검색" oninput="filterLocal()" style="border:1px solid var(--border);border-radius:7px;padding:5px 8px;font-size:13px;width:140px">
+        <div style="margin-left:auto;display:flex;gap:5px;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" id="btn-bundle" onclick="bundleSelected()" style="display:none"><i class="ti ti-link"></i> 묶기</button>
+          <button class="btn btn-ghost btn-sm" id="btn-unbundle" onclick="unbundleSelected()" style="display:none"><i class="ti ti-unlink"></i> 묶음해제</button>
+          <button class="btn btn-ghost btn-sm" id="btn-delete-sel" onclick="deleteSelected()" style="display:none;color:var(--c-accent)"><i class="ti ti-trash"></i> 삭제</button>
+          <button class="btn btn-ghost btn-sm" onclick="openBankImportModal()"><i class="ti ti-building-bank"></i> 계좌불러오기</button>
           <button class="btn btn-ghost btn-sm" onclick="exportExcel()"><i class="ti ti-download"></i> 엑셀</button>
-          <button class="btn btn-primary btn-sm" onclick="toggleForm()"><i class="ti ti-plus"></i> 내역추가</button>
+          <button class="btn btn-primary btn-sm" onclick="addGridRow()"><i class="ti ti-plus"></i> 행추가</button>
         </div>
       </div>
-      <!-- PC 필터 -->
-      <div class="filter-bar" id="ledger-filter-bar">
-        <input type="date" id="f-from" onchange="loadEntries()">
-        <span style="color:var(--text3)">~</span>
-        <input type="date" id="f-to" onchange="loadEntries()">
-        <select id="f-type" onchange="loadEntries()"><option value="">전체</option><option value="지출">지출</option><option value="입금">입금</option></select>
-        <select id="f-acct" onchange="loadEntries()"><option value="">계정 전체</option></select>
-        <input type="text" id="f-memo" placeholder="적요검색" oninput="filterLocal()" style="max-width:110px">
-        <button class="btn btn-ghost btn-sm" onclick="clearFilter()">초기화</button>
-      </div>
-
-      <div id="form-area" style="display:none">
-        <div class="form-with-ref">
-          <div class="inline-form">
-            <div class="form-grid">
-              <div class="fgroup">
-                <label>날짜 *</label>
-                <input type="date" id="f-date">
-              </div>
-              <div class="fgroup">
-                <label>구분 * <span class="shortcut-hint">(+입금 / -지출)</span></label>
-                <div style="position:relative">
-                  <input type="text" id="f-kind-text" placeholder="지출 / 입금 또는 +/-"
-                    autocomplete="off" value="지출"
-                    oninput="handleKindInput(this.value)"
-                    onkeydown="handleKindKey(event)"
-                    onfocus="showKindDrop()"
-                    onblur="setTimeout(hideKindDrop,200)"
-                    style="width:100%">
-                  <div id="kind-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid var(--c-primary);border-radius:0 0 8px 8px;z-index:51">
-                    <div class="kind-option" id="kind-opt-exp" data-val="지출" onmousedown="selectKind('지출')" style="padding:8px 12px;font-size:13px;cursor:pointer;color:var(--c-expense);font-weight:600;background:#FEF0EC">지출</div>
-                    <div class="kind-option" id="kind-opt-inc" data-val="입금" onmousedown="selectKind('입금')" style="padding:8px 12px;font-size:13px;cursor:pointer;color:var(--c-income);font-weight:600">입금</div>
-                  </div>
-                </div>
-                <input type="hidden" id="f-kind" value="지출">
-              </div>
-              <div class="fgroup">
-                <label>계정과목 * <span class="shortcut-hint">(코드 입력 가능)</span></label>
-                <div class="acct-combo">
-                  <input type="text" id="f-acct-text" placeholder="코드 또는 이름" autocomplete="off"
-                    oninput="filterAcct(this.value)" onfocus="showAcctDrop()" onblur="setTimeout(hideAcctDrop,200)" onkeydown="handleAcctKey(event)">
-                  <input type="hidden" id="f-acct-code">
-                  <div class="acct-dropdown" id="acct-dropdown"></div>
-                </div>
-              </div>
-              <div class="fgroup">
-                <label>거래처</label>
-                <input type="text" id="f-vendor" placeholder="거래처명">
-              </div>
-              <div class="fgroup">
-                <label>금액 *</label>
-                <input type="text" id="f-amt" placeholder="0" oninput="formatAmt(this)" inputmode="numeric">
-              </div>
-              <div class="fgroup" id="sub-acct-field" style="display:none">
-                <label>소분류 *</label>
-                <select id="f-sub-acct" style="border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:13px"></select>
-              </div>
-              <div class="fgroup" id="qty-field" style="display:none">
-                <label>수량 <span class="shortcut-hint">(소모품 주기 분석용)</span></label>
-                <input type="number" id="f-qty" placeholder="1" min="1" value="1">
-              </div>
-              <div class="fgroup" id="receipt-field" style="display:flex;flex-direction:column;gap:6px">
-                <label>영수증 (선택)</label>
-                <div class="upload-area" id="upload-area" onclick="document.getElementById('f-receipt').click()"
-                  ondragover="event.preventDefault();this.classList.add('drag')"
-                  ondragleave="this.classList.remove('drag')"
-                  ondrop="handleDrop(event)">
-                  <i class="ti ti-upload" style="font-size:16px"></i>
-                  <span id="upload-label">클릭 또는 드래그 (JPG·PNG·PDF)</span>
-                </div>
-                <input type="file" id="f-receipt" accept="image/*,.pdf" style="display:none" onchange="previewReceipt(this)">
-                <!-- 파일명 -->
-                <div id="receipt-filename" style="font-size:11px;color:var(--text2);display:none"></div>
-                <!-- 1줄: 자동입력 + 품목분리 -->
-                <div id="analyze-btns" style="display:none;gap:6px">
-                  <button type="button" id="analyze-btn" onclick="analyzeReceipt('single')" style="font-size:12px;color:#fff;background:var(--c-primary);border:none;border-radius:6px;padding:6px 14px;cursor:pointer;display:flex;align-items:center;gap:4px;flex:1;justify-content:center"><i class="ti ti-sparkles" style="font-size:13px"></i> 자동입력</button>
-                  <button type="button" id="analyze-multi-btn" onclick="analyzeReceipt('multi')" style="font-size:12px;color:#fff;background:#1D9E75;border:none;border-radius:6px;padding:6px 14px;cursor:pointer;display:flex;align-items:center;gap:4px;flex:1;justify-content:center"><i class="ti ti-list-details" style="font-size:13px"></i> 품목분리</button>
-                </div>
-                <!-- 2줄: 미리보기 + 삭제 -->
-                <div id="receipt-action-btns" style="display:none;gap:6px">
-                  <button type="button" onclick="showReceiptPreview()" style="font-size:12px;color:var(--c-primary);background:#E8F0FA;border:none;border-radius:6px;padding:6px 14px;cursor:pointer;display:flex;align-items:center;gap:4px;flex:1;justify-content:center"><i class="ti ti-eye" style="font-size:13px"></i> 미리보기</button>
-                  <button type="button" onclick="clearReceipt()" style="font-size:12px;color:var(--c-accent);background:#FEF0EC;border:none;border-radius:6px;padding:6px 14px;cursor:pointer;display:flex;align-items:center;gap:4px;flex:1;justify-content:center"><i class="ti ti-trash" style="font-size:13px"></i> 삭제</button>
-                </div>
-              </div>
-            </div>
-            <div class="fgroup"><label>적요</label><textarea id="f-memo-in" rows="2" placeholder="거래 내용 메모 (소모품명 포함 시 주기 분석에 활용됨)"></textarea></div>
-            <!-- 품목분리 결과 -->
-            <div id="multi-items-box" style="display:none;margin-top:12px;border:1px solid var(--c-income);border-radius:8px;overflow:hidden">
-              <div style="background:#E1F5EE;padding:8px 12px;display:flex;align-items:center;justify-content:space-between">
-                <span style="font-size:12px;font-weight:700;color:#0F6E56"><i class="ti ti-list-details"></i> 품목별 내역 — 계정과목 선택 후 전체저장</span>
-                <button type="button" onclick="clearMultiItems()" style="background:none;border:none;cursor:pointer;font-size:12px;color:var(--text3)"><i class="ti ti-x"></i></button>
-              </div>
-              <div id="multi-items-list" style="padding:8px"></div>
-              <div style="padding:8px 12px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px">
-                <button class="btn btn-ghost btn-sm" onclick="clearMultiItems()">취소</button>
-                <button class="btn btn-primary btn-sm" id="save-multi-btn" onclick="saveMultiItems()"><i class="ti ti-check"></i> 전체 저장</button>
-              </div>
-            </div>
-            <div class="form-actions">
-              <button class="btn btn-ghost" onclick="toggleForm()">취소</button>
-              <button class="btn btn-primary" id="save-btn" onclick="saveEntry()"><i class="ti ti-check"></i> 저장</button>
-            </div>
-          </div>
-
-          <!-- 빠른참조 표 -->
-          <div class="ref-table-box">
-            <div class="ref-title"><i class="ti ti-table" style="font-size:13px;color:var(--c-primary)"></i> 계정과목 빠른참조</div>
-            <div class="ref-grid">
-              <div class="ref-item" onclick="selectAcctFromRef('803','상여금')"><span class="ref-code">803</span><span class="ref-name">상여금</span><span class="ref-desc">특정 선생님 성과 포상</span></div>
-              <div class="ref-item" onclick="selectAcctFromRef('811','복리후생비')"><span class="ref-code">811</span><span class="ref-name">복리후생비</span><span class="ref-desc">전 직원 명절선물·회식·간식</span></div>
-              <div class="ref-item" onclick="selectAcctFromRef('813','접대비')"><span class="ref-code">813</span><span class="ref-name">접대비</span><span class="ref-desc">일부 수강생 간식, 즉흥 특정반 포상</span></div>
-              <div class="ref-item" onclick="selectAcctFromRef('827','회의비')"><span class="ref-code">827</span><span class="ref-name">회의비</span><span class="ref-desc">원장단 회의 음료·다과</span></div>
-              <div class="ref-item" onclick="selectAcctFromRef('830','소모품비')"><span class="ref-code">830</span><span class="ref-name">소모품비</span><span class="ref-desc">필기류·복사용지·위생비품류·수업용품</span></div>
-              <div class="ref-item" onclick="selectAcctFromRef('833','광고선전비')"><span class="ref-code">833</span><span class="ref-name">광고선전비</span><span class="ref-desc">우수학생 시상, 현수막·홍보물, 설명회 다과·생수</span></div>
-              <div class="ref-item" onclick="selectAcctFromRef('834','판매촉진비')"><span class="ref-code">834</span><span class="ref-name">판매촉진비</span><span class="ref-desc">사전 공지된 우수반 포상 음식</span></div>
-              <div class="ref-item" onclick="selectAcctFromRef('841','행사비')"><span class="ref-code">841</span><span class="ref-name">행사비</span><span class="ref-desc">마켓데이·푸드데이 등 학원 행사</span></div>
-              <div class="ref-item" onclick="selectAcctFromRef('842','기타잡비')"><span class="ref-code">842</span><span class="ref-name">기타잡비</span><span class="ref-desc">사진 인화·기타 소액 지출</span></div>
-              <div class="ref-item" onclick="selectAcctFromRef('824','운반비')"><span class="ref-code">824</span><span class="ref-name">운반비</span><span class="ref-desc">소포·택배 (답안지 등 물품 발송)</span></div>
-              <div class="ref-item" onclick="selectAcctFromRef('103','보통예금')"><span class="ref-code">103</span><span class="ref-name">보통예금</span><span class="ref-desc">본사 지원금·포상금 입금</span></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- PC 테이블 -->
-      <div class="tbl-wrap" id="ledger-tbl-wrap">
-        <table>
-          <thead><tr><th>날짜</th><th>구분</th><th>계정과목</th><th>소분류</th><th>거래처</th><th>적요</th><th>수량</th><th style="text-align:right">금액</th><th>영수증</th><th></th></tr></thead>
+      <!-- 그리드 -->
+      <div style="overflow-x:auto">
+        <table id="ledger-grid" style="width:100%;border-collapse:collapse;font-size:12px;min-width:1000px">
+          <thead>
+            <tr style="background:#F0F4FA;border-bottom:2px solid var(--border)">
+              <th style="padding:7px 6px;width:28px"><input type="checkbox" id="grid-chk-all" onchange="gridToggleAll(this)"></th>
+              <th style="padding:7px 4px;width:8px"></th><!-- 묶음 표시 -->
+              <th style="padding:7px 8px;min-width:105px">날짜</th>
+              <th style="padding:7px 4px;min-width:58px">구분</th>
+              <th style="padding:7px 4px;min-width:85px">결제수단</th>
+              <th style="padding:7px 4px;min-width:130px">계정과목</th>
+              <th style="padding:7px 4px;min-width:100px">소분류</th>
+              <th style="padding:7px 4px;min-width:90px">거래처</th>
+              <th style="padding:7px 4px;min-width:80px;text-align:right">금액</th>
+              <th style="padding:7px 4px;min-width:40px;text-align:center">수량</th>
+              <th style="padding:7px 4px;min-width:160px">적요</th>
+              <th style="padding:7px 4px;min-width:44px;text-align:center">영수증</th>
+              <th style="padding:7px 4px;min-width:44px;text-align:center">저장</th>
+            </tr>
+          </thead>
           <tbody id="ledger-body"></tbody>
         </table>
+        <div class="empty" id="ledger-empty" style="display:none;padding:40px"><i class="ti ti-inbox"></i>내역이 없습니다</div>
       </div>
-      <!-- 모바일 카드 리스트 -->
-      <div id="ledger-mobile-list" style="display:none"></div>
-      <div class="empty" id="ledger-empty" style="display:none"><i class="ti ti-inbox"></i>내역이 없습니다</div>
+      <!-- 묶음 합계 표시 -->
+      <div id="bundle-info" style="display:none;padding:8px 14px;background:#EEF4FF;border-top:1px solid var(--border);font-size:12px;color:var(--c-primary)"></div>
     </div>
+
+    <!-- 모바일 카드 리스트 -->
+    <div id="ledger-mobile-list" style="display:none"></div>
   </div>
 
   <div id="page-stats" class="page">
@@ -756,6 +666,58 @@ td.amt-inc{color:var(--c-income);font-weight:600}
   </div>
 
 </main>
+</div>
+
+<!-- 계좌내역 불러오기 모달 -->
+<div id="bank-import-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:600;align-items:center;justify-content:center;padding:1rem">
+  <div style="background:#fff;border-radius:14px;padding:1.5rem;width:100%;max-width:400px">
+    <h3 style="font-size:15px;font-weight:700;margin-bottom:1rem"><i class="ti ti-building-bank" style="color:var(--c-primary)"></i> 계좌내역 불러오기</h3>
+    <div class="fgroup" style="margin-bottom:10px"><label>계좌 선택</label>
+      <select id="import-account-sel" style="width:100%;border:1px solid var(--border);border-radius:7px;padding:7px 8px;font-size:13px"><option value="">전체 계좌</option></select>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <div class="fgroup" style="flex:1"><label>시작일</label><input type="date" id="import-from" style="width:100%;border:1px solid var(--border);border-radius:7px;padding:7px 8px;font-size:13px"></div>
+      <div class="fgroup" style="flex:1"><label>종료일</label><input type="date" id="import-to" style="width:100%;border:1px solid var(--border);border-radius:7px;padding:7px 8px;font-size:13px"></div>
+    </div>
+    <div style="background:#FFF8E1;border-radius:8px;padding:10px 12px;font-size:11px;color:#7B5800;margin-bottom:12px;line-height:1.7">
+      <i class="ti ti-info-circle"></i> 미처리 계좌내역을 거래내역으로 즉시 저장합니다.<br>불필요한 내역은 체크박스로 선택 후 삭제하세요.
+    </div>
+    <div id="import-err" style="color:var(--c-accent);font-size:12px;min-height:16px;margin-bottom:8px"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn btn-ghost btn-sm" onclick="closeBankImportModal()">취소</button>
+      <button class="btn btn-primary btn-sm" onclick="doBankImport()"><i class="ti ti-download"></i> 불러오기</button>
+    </div>
+  </div>
+</div>
+
+<!-- 모바일 내역 입력 모달 -->
+<div id="mobile-entry-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:600;align-items:flex-end;justify-content:center">
+  <div style="background:#fff;border-radius:16px 16px 0 0;padding:1.5rem;width:100%;max-height:90vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+      <h3 style="font-size:15px;font-weight:700" id="mobile-entry-title">내역 추가</h3>
+      <button onclick="closeMobileEntryModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text3)"><i class="ti ti-x"></i></button>
+    </div>
+    <input type="hidden" id="m-edit-id">
+    <div class="form-grid" style="grid-template-columns:1fr 1fr">
+      <div class="fgroup"><label>날짜 *</label><input type="date" id="m-date"></div>
+      <div class="fgroup"><label>구분 *</label>
+        <select id="m-kind" style="width:100%;border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:13px">
+          <option value="지출">지출</option><option value="입금">입금</option>
+        </select>
+      </div>
+      <div class="fgroup" style="grid-column:1/-1"><label>계정과목 *</label>
+        <select id="m-acct-sel" style="width:100%;border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:13px"></select>
+      </div>
+      <div class="fgroup"><label>금액 *</label><input type="text" id="m-amt" placeholder="0" oninput="formatAmt(this)" inputmode="numeric"></div>
+      <div class="fgroup"><label>거래처</label><input type="text" id="m-vendor" placeholder="거래처명"></div>
+      <div class="fgroup" style="grid-column:1/-1"><label>적요</label><input type="text" id="m-memo" placeholder="내용 메모"></div>
+    </div>
+    <div id="m-err" style="color:var(--c-accent);font-size:12px;min-height:16px;margin-bottom:8px"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+      <button class="btn btn-ghost" onclick="closeMobileEntryModal()">취소</button>
+      <button class="btn btn-primary" onclick="saveMobileEntry()"><i class="ti ti-check"></i> 저장</button>
+    </div>
+  </div>
 </div>
 
 <!-- 계좌 추가/수정 모달 -->
@@ -961,11 +923,458 @@ function initDates(){
   const now=new Date(),y=now.getFullYear(),m=String(now.getMonth()+1).padStart(2,'0');
   const last=new Date(y,now.getMonth()+1,0).getDate().toString().padStart(2,'0');
   const first=`${y}-${m}-01`,end=`${y}-${m}-${last}`;
-  ['f-from','s-from','ab-from'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=first});
-  ['f-to','s-to','ab-to'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=end});
-  document.getElementById('f-date').value=now.toISOString().split('T')[0];
+  // 그리드용 연도/월 셀렉트
+  const ySel=document.getElementById('grid-year');
+  if(ySel){
+    ySel.innerHTML='';
+    for(let i=y-3;i<=y+1;i++) ySel.innerHTML+=`<option value="${i}" ${i===y?'selected':''}>${i}</option>`;
+  }
+  const mSel=document.getElementById('grid-month');
+  if(mSel) mSel.value=m;
+  ['s-from','ab-from'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=first});
+  ['s-to','ab-to'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=end});
   const fm=document.getElementById('f-from-m');if(fm)fm.value=first;
   const tm=document.getElementById('f-to-m');if(tm)tm.value=end;
+  // import modal 기본 기간
+  const importFrom=document.getElementById('import-from');if(importFrom)importFrom.value=first;
+  const importTo=document.getElementById('import-to');if(importTo)importTo.value=end;
+}
+
+function getGridPeriod(){
+  const y=document.getElementById('grid-year')?.value||new Date().getFullYear();
+  const m=document.getElementById('grid-month')?.value||'00';
+  if(m==='00') return {from:`${y}-01-01`,to:`${y}-12-31`};
+  const last=new Date(parseInt(y),parseInt(m),0).getDate().toString().padStart(2,'0');
+  return {from:`${y}-${m}-01`,to:`${y}-${m}-${last}`};
+}
+
+async function loadEntries(){
+  showLoading(true);
+  const{from,to}=getGridPeriod();
+  const type=document.getElementById('f-type')?.value||'';
+  let q=sb.from('entries').select('*').eq('branch',curBranch).order('date',{ascending:false}).order('id',{ascending:false});
+  q=q.gte('date',from).lte('date',to);
+  if(type) q=q.eq('kind',type);
+  const{data,error}=await q;
+  showLoading(false);
+  if(error){toast('로드 오류: '+error.message);return}
+  allEntries=data||[];
+  sb.from('entries').select('amt,kind').eq('branch',curBranch).then(({data:all})=>{
+    if(all){
+      const allInc=(all||[]).filter(e=>e.kind==='입금').reduce((s,e)=>s+e.amt,0);
+      const allExp=(all||[]).filter(e=>e.kind==='지출').reduce((s,e)=>s+e.amt,0);
+      window._sijaeBalance=allInc-allExp;
+    }
+    filterLocal();
+  });
+}
+
+function filterLocal(){
+  const memo=document.getElementById('f-memo')?.value?.toLowerCase()||'';
+  const filtered=memo?allEntries.filter(e=>(e.memo||'').toLowerCase().includes(memo)||(e.acct||'').includes(memo)||(e.vendor||'').toLowerCase().includes(memo)):allEntries;
+  renderLedger(filtered);
+}
+
+/* ===== 그리드 렌더링 ===== */
+const GRID_INPUT_STYLE='border:1px solid transparent;border-radius:4px;padding:3px 5px;font-size:12px;width:100%;background:transparent;outline:none;';
+const GRID_INPUT_FOCUS='border-color:var(--c-primary);background:#fff;';
+
+function renderLedger(data){
+  if(!data) data=allEntries;
+  const totalExp=data.filter(e=>e.kind==='지출').reduce((s,e)=>s+e.amt,0);
+  const totalInc=data.filter(e=>e.kind==='입금').reduce((s,e)=>s+e.amt,0);
+  document.getElementById('ledger-stats').innerHTML=`
+    <div class="stat"><div class="stat-label">지출 합계</div><div class="stat-val exp">-${totalExp.toLocaleString()}원</div></div>
+    <div class="stat"><div class="stat-label">입금 합계</div><div class="stat-val inc">+${totalInc.toLocaleString()}원</div></div>
+    <div class="stat"><div class="stat-label">순액</div><div class="stat-val" style="color:${totalInc-totalExp>=0?'var(--c-income)':'var(--c-expense)'}">${(totalInc-totalExp>=0?'+':'')}${(totalInc-totalExp).toLocaleString()}원</div></div>
+    <div class="stat"><div class="stat-label">현재시재 <span style="font-size:9px;color:var(--text3)">(전체)</span></div><div class="stat-val" style="color:${(window._sijaeBalance||0)>=0?'var(--c-income)':'var(--c-expense)'}">${((window._sijaeBalance||0)>=0?'+':'')}${(window._sijaeBalance||0).toLocaleString()}원</div></div>
+    <div class="stat"><div class="stat-label">건수</div><div class="stat-val">${data.length}건</div></div>`;
+
+  const isMobile=window.innerWidth<=768;
+  const pcWrap=document.getElementById('pc-ledger-wrap');
+  const mobileList=document.getElementById('ledger-mobile-list');
+
+  if(isMobile){
+    if(pcWrap) pcWrap.style.display='none';
+    if(mobileList) mobileList.style.display='block';
+    renderMobileCards(data);
+  } else {
+    if(pcWrap) pcWrap.style.display='';
+    if(mobileList) mobileList.style.display='none';
+    renderGrid(data);
+  }
+}
+
+function renderGrid(data){
+  const empty=document.getElementById('ledger-empty');
+  const tbody=document.getElementById('ledger-body');
+  if(!data.length){empty.style.display='block';tbody.innerHTML='';return;}
+  empty.style.display='none';
+
+  const acctOpts=ACCOUNTS.map(a=>`<option value="${a.code}">${a.code} ${a.name}</option>`).join('');
+  const pmOpts=['','계좌이체','체크카드','신용카드','현금','기타'].map(p=>`<option value="${p}">${p}</option>`).join('');
+
+  // 묶음 그룹별 색상
+  const bundleColors=['#EEF4FF','#FFF8E1','#F0FDF4','#FEF0EC','#F5F0FF'];
+  const bundleGroups={};
+  data.forEach(e=>{if(e.bundle_id){if(!bundleGroups[e.bundle_id]) bundleGroups[e.bundle_id]=Object.keys(bundleGroups).length;} });
+
+  tbody.innerHTML=data.map((e,idx)=>{
+    const bundleIdx=e.bundle_id!=null?bundleGroups[e.bundle_id]:-1;
+    const bundleColor=bundleIdx>=0?bundleColors[bundleIdx%bundleColors.length]:'';
+    const isFirstInBundle=e.bundle_id!=null&&(idx===0||data[idx-1].bundle_id!==e.bundle_id);
+    const isLastInBundle=e.bundle_id!=null&&(idx===data.length-1||data[idx+1].bundle_id!==e.bundle_id);
+    const bundleBar=e.bundle_id!=null
+      ?`<td style="padding:0;width:6px"><div style="width:5px;height:100%;background:${bundleColors[bundleIdx%bundleColors.length]};border-radius:${isFirstInBundle?'3px 3px':'0 0'} ${isLastInBundle?'3px 3px':'0 0'};min-height:32px;border-left:3px solid var(--c-primary)"></div></td>`
+      :`<td style="padding:0;width:6px"></td>`;
+    const subOpts=e.code==='830'?SUB_ACCOUNTS['830'].map(s=>`<option value="${s.code}" ${s.code===e.sub_code?'selected':''}>${s.name}</option>`).join(''):'';
+    const isPdf=e.receipt_url&&(e.receipt_url.endsWith('.pdf')||e.receipt_url.includes('.pdf?'));
+    return `<tr id="grid-row-${e.id}" data-id="${e.id}" data-bundle="${e.bundle_id||''}" style="border-bottom:1px solid var(--border);background:${bundleColor};transition:background 0.15s" onmouseenter="this.style.background='${bundleColor||'#FAFBFF'}'" onmouseleave="this.style.background='${bundleColor}'">
+      <td style="padding:4px 6px;text-align:center"><input type="checkbox" class="grid-chk" data-id="${e.id}" onchange="updateGridSelButtons()"></td>
+      ${bundleBar}
+      <td style="padding:3px 4px"><input type="date" value="${e.date}" style="${GRID_INPUT_STYLE}" onfocus="this.style.cssText='${GRID_INPUT_STYLE}${GRID_INPUT_FOCUS}'" onblur="this.style.cssText='${GRID_INPUT_STYLE}';gridSaveCell(${e.id},'date',this.value)"></td>
+      <td style="padding:3px 2px"><select style="${GRID_INPUT_STYLE}" onchange="gridSaveCell(${e.id},'kind',this.value)">
+        <option value="지출" ${e.kind==='지출'?'selected':''}>지출</option>
+        <option value="입금" ${e.kind==='입금'?'selected':''}>입금</option>
+      </select></td>
+      <td style="padding:3px 2px"><select style="${GRID_INPUT_STYLE}" onchange="gridSaveCell(${e.id},'payment_method',this.value)">
+        ${pmOpts.replace(`value="${e.payment_method||''}"`,`value="${e.payment_method||''}" selected`)}
+      </select></td>
+      <td style="padding:3px 2px"><select style="${GRID_INPUT_STYLE}" onchange="gridSaveCellAcct(${e.id},this)">
+        <option value="">선택</option>${acctOpts.replace(`value="${e.code}"`,`value="${e.code}" selected`)}
+      </select></td>
+      <td style="padding:3px 2px" id="sub-cell-${e.id}">${e.code==='830'?`<select style="${GRID_INPUT_STYLE}" onchange="gridSaveCell(${e.id},'sub_code',this.value);gridSaveCell(${e.id},'sub_acct',this.options[this.selectedIndex].text)"><option value="">-</option>${subOpts}</select>`:`<span style="font-size:11px;color:var(--text3)">-</span>`}</td>
+      <td style="padding:3px 2px"><input type="text" value="${e.vendor||''}" placeholder="거래처" style="${GRID_INPUT_STYLE}" onfocus="this.style.cssText='${GRID_INPUT_STYLE}${GRID_INPUT_FOCUS}'" onblur="this.style.cssText='${GRID_INPUT_STYLE}';gridSaveCell(${e.id},'vendor',this.value)"></td>
+      <td style="padding:3px 4px;text-align:right"><input type="text" value="${e.amt.toLocaleString()}" data-raw="${e.amt}" style="${GRID_INPUT_STYLE}text-align:right;font-weight:700;color:${e.kind==='지출'?'var(--c-expense)':'var(--c-income)'}" onfocus="this.style.cssText='${GRID_INPUT_STYLE}text-align:right;${GRID_INPUT_FOCUS}'" onblur="this.style.cssText='${GRID_INPUT_STYLE}text-align:right;font-weight:700;color:${e.kind==='지출'?'var(--c-expense)':'var(--c-income)'}';gridSaveAmt(${e.id},this)" oninput="formatAmt(this)"></td>
+      <td style="padding:3px 2px;text-align:center"><input type="number" value="${e.qty||1}" min="1" style="${GRID_INPUT_STYLE}text-align:center;width:38px" onfocus="this.style.cssText='${GRID_INPUT_STYLE}text-align:center;width:38px;${GRID_INPUT_FOCUS}'" onblur="this.style.cssText='${GRID_INPUT_STYLE}text-align:center;width:38px';gridSaveCell(${e.id},'qty',parseInt(this.value)||1)"></td>
+      <td style="padding:3px 2px"><input type="text" value="${(e.memo||'').replace(/"/g,'&quot;')}" placeholder="적요" style="${GRID_INPUT_STYLE}" onfocus="this.style.cssText='${GRID_INPUT_STYLE}${GRID_INPUT_FOCUS}'" onblur="this.style.cssText='${GRID_INPUT_STYLE}';gridSaveCell(${e.id},'memo',this.value)"></td>
+      <td style="padding:3px 4px;text-align:center">${e.receipt_url
+        ?(isPdf?`<a href="${e.receipt_url}" target="_blank" title="PDF 영수증" style="color:var(--c-primary);font-size:14px"><i class="ti ti-file-type-pdf"></i></a>`
+          :`<img src="${e.receipt_url}" style="width:24px;height:24px;border-radius:4px;object-fit:cover;cursor:pointer" onclick="showReceiptRow(${e.id})" title="영수증 보기">`)
+        :`<label title="영수증 첨부" style="cursor:pointer;color:var(--text3);font-size:14px"><i class="ti ti-paperclip"></i><input type="file" accept="image/*,.pdf" style="display:none" onchange="gridUploadReceipt(${e.id},this)"></label>`}</td>
+      <td style="padding:3px 4px;text-align:center"><button onclick="deleteEntry(${e.id})" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:14px;padding:2px 4px" title="삭제"><i class="ti ti-trash"></i></button></td>
+    </tr>`;
+  }).join('');
+
+  updateBundleInfo(data);
+}
+
+async function gridSaveCell(id,field,value){
+  const e=allEntries.find(x=>x.id==id);
+  if(!e) return;
+  if(e[field]===value) return;
+  e[field]=value;
+  await sb.from('entries').update({[field]:value}).eq('id',id);
+}
+
+async function gridSaveCellAcct(id,sel){
+  const code=sel.value;
+  const acct=ACCOUNTS.find(a=>a.code===code)?.name||'';
+  const e=allEntries.find(x=>x.id==id);
+  if(e){e.code=code;e.acct=acct;}
+  await sb.from('entries').update({code,acct}).eq('id',id);
+  // 소분류 셀 업데이트
+  const subCell=document.getElementById(`sub-cell-${id}`);
+  if(subCell){
+    if(code==='830'){
+      const subOpts=SUB_ACCOUNTS['830'].map(s=>`<option value="${s.code}">${s.name}</option>`).join('');
+      subCell.innerHTML=`<select style="${GRID_INPUT_STYLE}" onchange="gridSaveCell(${id},'sub_code',this.value);gridSaveCell(${id},'sub_acct',this.options[this.selectedIndex].text)"><option value="">-</option>${subOpts}</select>`;
+    } else {
+      subCell.innerHTML=`<span style="font-size:11px;color:var(--text3)">-</span>`;
+      await sb.from('entries').update({sub_code:'',sub_acct:''}).eq('id',id);
+    }
+  }
+}
+
+async function gridSaveAmt(id,input){
+  const raw=parseInt((input.dataset.raw||input.value.replace(/[^0-9]/g,''))||0);
+  const e=allEntries.find(x=>x.id==id);
+  if(e) e.amt=raw;
+  await sb.from('entries').update({amt:raw}).eq('id',id);
+  updateBundleInfo(allEntries);
+}
+
+async function gridUploadReceipt(id,input){
+  const file=input.files[0];if(!file)return;
+  showLoading(true);
+  const ext=file.name.split('.').pop();
+  const branchMap={'남동탄 분원':'namdongtan','수원 분원':'suwon','장안 분원':'jangan','서수원 분원':'seosuwon','운정 1분원':'unjeong1','운정 2분원':'unjeong2','테스트JLS':'test'};
+  const safeBranch=branchMap[curBranch]||curBranch.replace(/[^a-zA-Z0-9_-]/g,'_');
+  const path=`${safeBranch}/entry_${id}_${Date.now()}.${ext}`;
+  const{error:upErr}=await sb.storage.from('receipts').upload(path,file,{upsert:true});
+  if(upErr){showLoading(false);toast('업로드 오류: '+upErr.message);return;}
+  const{data:{publicUrl}}=sb.storage.from('receipts').getPublicUrl(path);
+  await sb.from('entries').update({receipt_url:publicUrl}).eq('id',id);
+  showLoading(false);
+  toast('영수증 첨부 완료');
+  loadEntries();
+}
+
+function addGridRow(){
+  const now=new Date().toISOString().split('T')[0];
+  const tbody=document.getElementById('ledger-body');
+  const tempId='new_'+Date.now();
+  const acctOpts=ACCOUNTS.map(a=>`<option value="${a.code}">${a.code} ${a.name}</option>`).join('');
+  const newRow=document.createElement('tr');
+  newRow.id=`grid-row-${tempId}`;
+  newRow.style.cssText='border-bottom:1px solid var(--border);background:#FFFDE7';
+  newRow.innerHTML=`
+    <td style="padding:4px 6px;text-align:center"><input type="checkbox" class="grid-chk" data-id="${tempId}"></td>
+    <td style="padding:0;width:6px"></td>
+    <td style="padding:3px 4px"><input type="date" id="nr-date" value="${now}" style="${GRID_INPUT_STYLE}${GRID_INPUT_FOCUS}"></td>
+    <td style="padding:3px 2px"><select id="nr-kind" style="${GRID_INPUT_STYLE}"><option value="지출">지출</option><option value="입금">입금</option></select></td>
+    <td style="padding:3px 2px"><select id="nr-pm" style="${GRID_INPUT_STYLE}"><option value="">-</option><option value="계좌이체">계좌이체</option><option value="체크카드">체크카드</option><option value="신용카드">신용카드</option><option value="현금">현금</option><option value="기타">기타</option></select></td>
+    <td style="padding:3px 2px"><select id="nr-acct" style="${GRID_INPUT_STYLE}"><option value="">계정과목 선택</option>${acctOpts}</select></td>
+    <td style="padding:3px 2px" id="nr-sub-cell"><span style="font-size:11px;color:var(--text3)">-</span></td>
+    <td style="padding:3px 2px"><input type="text" id="nr-vendor" placeholder="거래처" style="${GRID_INPUT_STYLE}"></td>
+    <td style="padding:3px 4px"><input type="text" id="nr-amt" placeholder="0" oninput="formatAmt(this)" inputmode="numeric" style="${GRID_INPUT_STYLE}text-align:right;${GRID_INPUT_FOCUS}"></td>
+    <td style="padding:3px 2px;text-align:center"><input type="number" id="nr-qty" value="1" min="1" style="${GRID_INPUT_STYLE}text-align:center;width:38px"></td>
+    <td style="padding:3px 2px"><input type="text" id="nr-memo" placeholder="적요" style="${GRID_INPUT_STYLE}"></td>
+    <td style="padding:3px 4px;text-align:center"><span style="font-size:11px;color:var(--text3)">-</span></td>
+    <td style="padding:3px 4px;text-align:center">
+      <button onclick="saveNewRow()" style="background:var(--c-primary);color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:11px;padding:3px 8px">저장</button>
+      <button onclick="cancelNewRow()" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:13px;padding:2px 4px"><i class="ti ti-x"></i></button>
+    </td>`;
+  // 소분류 자동 변경
+  newRow.querySelector('#nr-acct').addEventListener('change',function(){
+    const subCell=document.getElementById('nr-sub-cell');
+    if(this.value==='830'){
+      const subOpts=SUB_ACCOUNTS['830'].map(s=>`<option value="${s.code}">${s.name}</option>`).join('');
+      subCell.innerHTML=`<select id="nr-sub" style="${GRID_INPUT_STYLE}"><option value="">-</option>${subOpts}</select>`;
+    } else {
+      subCell.innerHTML=`<span style="font-size:11px;color:var(--text3)">-</span>`;
+    }
+  });
+  tbody.insertBefore(newRow,tbody.firstChild);
+  document.getElementById('ledger-empty').style.display='none';
+}
+
+async function saveNewRow(){
+  const date=document.getElementById('nr-date')?.value;
+  const kind=document.getElementById('nr-kind')?.value;
+  const code=document.getElementById('nr-acct')?.value;
+  const amt=parseInt((document.getElementById('nr-amt')?.dataset.raw||document.getElementById('nr-amt')?.value.replace(/[^0-9]/g,''))||0);
+  if(!date||!code){toast('날짜와 계정과목은 필수입니다');return;}
+  if(amt<=0){toast('금액을 입력하세요');return;}
+  const acct=ACCOUNTS.find(a=>a.code===code)?.name||'';
+  const subSel=document.getElementById('nr-sub');
+  const sub_code=code==='830'&&subSel?subSel.value:'';
+  const sub_acct=code==='830'&&subSel?SUB_ACCOUNTS['830'].find(s=>s.code===subSel.value)?.name||'':'';
+  const payload={branch:curBranch,date,kind,code,acct,sub_code,sub_acct,vendor:document.getElementById('nr-vendor')?.value.trim()||null,memo:document.getElementById('nr-memo')?.value.trim()||null,amt,qty:parseInt(document.getElementById('nr-qty')?.value)||1,payment_method:document.getElementById('nr-pm')?.value||null};
+  showLoading(true);
+  const{error}=await sb.from('entries').insert(payload);
+  showLoading(false);
+  if(error){toast('저장 오류: '+error.message);return;}
+  toast('저장되었습니다');
+  loadEntries();
+}
+
+function cancelNewRow(){
+  const row=document.querySelector('tr[id^="grid-row-new_"]');
+  if(row) row.remove();
+  if(!allEntries.length) document.getElementById('ledger-empty').style.display='block';
+}
+
+/* ===== 체크박스 & 묶음 ===== */
+function gridToggleAll(chk){
+  document.querySelectorAll('.grid-chk').forEach(c=>c.checked=chk.checked);
+  updateGridSelButtons();
+}
+
+function updateGridSelButtons(){
+  const checked=document.querySelectorAll('.grid-chk:checked');
+  const cnt=checked.length;
+  const delBtn=document.getElementById('btn-delete-sel');
+  const bundleBtn=document.getElementById('btn-bundle');
+  const unbundleBtn=document.getElementById('btn-unbundle');
+  if(delBtn) delBtn.style.display=cnt>0?'':'none';
+  if(bundleBtn) bundleBtn.style.display=cnt>=2?'':'none';
+  // 묶음해제: 선택된 것 중 bundle_id 있는 게 있으면 표시
+  const selectedIds=[...checked].map(c=>parseInt(c.dataset.id)).filter(Boolean);
+  const hasBundled=selectedIds.some(id=>{const e=allEntries.find(x=>x.id===id);return e&&e.bundle_id;});
+  if(unbundleBtn) unbundleBtn.style.display=hasBundled?'':'none';
+}
+
+function getSelectedIds(){
+  return [...document.querySelectorAll('.grid-chk:checked')].map(c=>parseInt(c.dataset.id)).filter(Boolean);
+}
+
+async function bundleSelected(){
+  const ids=getSelectedIds();
+  if(ids.length<2){toast('2건 이상 선택해주세요');return;}
+  const bundleId=`bundle_${Date.now()}`;
+  // 합계 확인
+  const selected=allEntries.filter(e=>ids.includes(e.id));
+  const total=selected.reduce((s,e)=>s+e.amt,0);
+  const kinds=[...new Set(selected.map(e=>e.kind))];
+  const confirm_msg=`${ids.length}건을 묶음 처리합니다.\n합계: ${total.toLocaleString()}원 (${kinds.join('/')})\n\n실제 결제금액과 맞는지 확인하세요.`;
+  if(!confirm(confirm_msg)) return;
+  showLoading(true);
+  await sb.from('entries').update({bundle_id:bundleId}).in('id',ids);
+  showLoading(false);
+  toast(`${ids.length}건 묶음 완료`);
+  loadEntries();
+}
+
+async function unbundleSelected(){
+  const ids=getSelectedIds();
+  if(!ids.length) return;
+  if(!confirm('선택한 항목의 묶음을 해제하시겠습니까?')) return;
+  showLoading(true);
+  await sb.from('entries').update({bundle_id:null}).in('id',ids);
+  showLoading(false);
+  toast('묶음 해제 완료');
+  loadEntries();
+}
+
+async function deleteSelected(){
+  const ids=getSelectedIds();
+  if(!ids.length) return;
+  if(!confirm(`${ids.length}건을 삭제하시겠습니까?`)) return;
+  showLoading(true);
+  await sb.from('entries').delete().in('id',ids);
+  showLoading(false);
+  toast(`${ids.length}건 삭제`);
+  loadEntries();
+}
+
+function updateBundleInfo(data){
+  const el=document.getElementById('bundle-info');
+  if(!el) return;
+  const bundles={};
+  data.forEach(e=>{if(e.bundle_id){if(!bundles[e.bundle_id])bundles[e.bundle_id]=[];bundles[e.bundle_id].push(e);}});
+  const keys=Object.keys(bundles);
+  if(!keys.length){el.style.display='none';return;}
+  el.style.display='block';
+  el.innerHTML='<i class="ti ti-link"></i> 묶음 내역: '+keys.map(k=>{
+    const items=bundles[k];
+    const total=items.reduce((s,e)=>s+e.amt,0);
+    return `<span style="margin-left:10px;background:#fff;border-radius:5px;padding:2px 8px;border:1px solid var(--c-primary)">${items.length}건 합계 ${total.toLocaleString()}원</span>`;
+  }).join('');
+}
+
+/* ===== 계좌내역 불러오기 ===== */
+function openBankImportModal(){
+  loadBankTxAccounts().then(()=>{
+    const sel=document.getElementById('import-account-sel');
+    if(sel) sel.innerHTML='<option value="">전체 계좌</option>'+accountsCache.filter(a=>a.is_active).map(a=>`<option value="${a.id}">[${a.category}] ${a.name} - ${a.bank}</option>`).join('');
+  });
+  document.getElementById('import-err').textContent='';
+  document.getElementById('bank-import-modal').style.display='flex';
+}
+function closeBankImportModal(){document.getElementById('bank-import-modal').style.display='none';}
+
+async function doBankImport(){
+  const accountId=document.getElementById('import-account-sel').value;
+  const from=document.getElementById('import-from').value;
+  const to=document.getElementById('import-to').value;
+  if(!from||!to){document.getElementById('import-err').textContent='기간을 설정해주세요';return;}
+  showLoading(true);
+  let q=sb.from('bank_transactions').select('*').eq('branch',curBranch).eq('status','미처리').gte('tx_date',from).lte('tx_date',to);
+  if(accountId) q=q.eq('account_id',accountId);
+  const{data:txs}=await q;
+  if(!txs||!txs.length){showLoading(false);document.getElementById('import-err').textContent='해당 기간 미처리 계좌내역이 없습니다';return;}
+  // entries로 변환 저장
+  const entries=txs.map(tx=>{
+    const rec=getRecommend(tx.description);
+    const acctCode=tx.draft_acct_code||rec.acct_code||'842';
+    const acctObj=ACCOUNTS.find(a=>a.code===acctCode);
+    return {branch:curBranch,date:tx.tx_date,kind:tx.draft_kind||(tx.withdrawal>0?'지출':'입금'),code:acctCode,acct:acctObj?.name||'기타잡비',sub_acct:tx.draft_sub_acct||null,vendor:tx.draft_vendor||rec.vendor||null,memo:tx.draft_memo||tx.description||null,amt:tx.withdrawal>0?tx.withdrawal:tx.deposit,qty:1,payment_method:tx.payment_method||'계좌이체',bank_tx_id:tx.id};
+  });
+  const{error}=await sb.from('entries').insert(entries);
+  if(error){showLoading(false);document.getElementById('import-err').textContent=error.message;return;}
+  // bank_transactions 처리완료로 업데이트
+  await sb.from('bank_transactions').update({status:'처리완료'}).in('id',txs.map(t=>t.id));
+  showLoading(false);
+  closeBankImportModal();
+  toast(`${entries.length}건 불러오기 완료! 필요없는 항목은 체크 후 삭제하세요.`);
+  loadEntries();
+}
+
+/* ===== 모바일 카드 렌더 ===== */
+function renderMobileCards(data){
+  const mobileList=document.getElementById('ledger-mobile-list');
+  if(!data.length){mobileList.innerHTML='<div class="empty"><i class="ti ti-inbox"></i>내역이 없습니다</div>';return;}
+  mobileList.innerHTML=data.map(e=>{
+    const isPdf=e.receipt_url&&(e.receipt_url.endsWith('.pdf')||e.receipt_url.includes('.pdf?'));
+    const receiptCell=e.receipt_url?(isPdf?`<span style="font-size:11px;color:var(--c-primary);cursor:pointer" onclick="showReceiptRow(${e.id})"><i class="ti ti-file-type-pdf"></i> PDF</span>`:`<img src="${e.receipt_url}" style="width:36px;height:36px;border-radius:6px;object-fit:cover;cursor:pointer;border:1px solid var(--border)" onclick="showReceiptRow(${e.id})" alt="영수증">`):'';
+    const bundleTag=e.bundle_id?`<span style="font-size:10px;background:#EEF4FF;color:var(--c-primary);padding:2px 6px;border-radius:8px;font-weight:600"><i class="ti ti-link"></i> 묶음</span>`:'';
+    return `<div style="background:#fff;border-radius:12px;margin:0 12px 10px;border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden${e.bundle_id?';border-left:3px solid var(--c-primary)':''}">
+      <div style="padding:12px 14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <span style="font-size:12px;color:var(--text3)">${e.date}</span>
+          <span style="font-size:16px;font-weight:800;color:${e.kind==='지출'?'var(--c-expense)':'var(--c-income)'}">${e.kind==='지출'?'-':'+'}${e.amt.toLocaleString()}원</span>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px">
+          <span class="tag ${e.kind==='지출'?'tag-exp':'tag-inc'}">${e.kind}</span>
+          <span class="tag tag-acct">${e.code} ${e.acct}</span>
+          ${e.sub_acct?`<span class="tag" style="background:#F0F4FA;color:var(--text2)">${e.sub_acct}</span>`:''}
+          ${bundleTag}
+        </div>
+        <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.memo||'(적요 없음)'}</div>
+        <div style="font-size:11px;color:var(--text3)">${[e.vendor,e.qty?'수량 '+e.qty:null].filter(Boolean).join(' · ')||''}</div>
+      </div>
+      <div style="display:flex;border-top:1px solid var(--border);padding:6px 10px;gap:6px;align-items:center">
+        <span style="flex:1;font-size:11px">${receiptCell}</span>
+        <button class="btn btn-ghost btn-sm" onclick="openMobileEntryModal(${e.id})" style="padding:5px 14px;font-size:12px"><i class="ti ti-edit"></i> 수정</button>
+        <button class="btn btn-ghost btn-sm" onclick="deleteEntry(${e.id})" style="padding:5px 14px;font-size:12px;color:var(--c-accent)"><i class="ti ti-trash"></i> 삭제</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ===== 모바일 입력 모달 ===== */
+function openMobileEntryModal(id){
+  const modal=document.getElementById('mobile-entry-modal');
+  const acctOpts=ACCOUNTS.map(a=>`<option value="${a.code}">${a.code} ${a.name}</option>`).join('');
+  document.getElementById('m-acct-sel').innerHTML='<option value="">계정과목 선택</option>'+acctOpts;
+  document.getElementById('m-err').textContent='';
+  if(id){
+    const e=allEntries.find(x=>x.id==id);
+    if(!e) return;
+    document.getElementById('mobile-entry-title').textContent='내역 수정';
+    document.getElementById('m-edit-id').value=e.id;
+    document.getElementById('m-date').value=e.date;
+    document.getElementById('m-kind').value=e.kind;
+    document.getElementById('m-acct-sel').value=e.code;
+    document.getElementById('m-amt').value=e.amt.toLocaleString();
+    document.getElementById('m-amt').dataset.raw=String(e.amt);
+    document.getElementById('m-vendor').value=e.vendor||'';
+    document.getElementById('m-memo').value=e.memo||'';
+  } else {
+    document.getElementById('mobile-entry-title').textContent='내역 추가';
+    document.getElementById('m-edit-id').value='';
+    document.getElementById('m-date').value=new Date().toISOString().split('T')[0];
+    document.getElementById('m-kind').value='지출';
+    document.getElementById('m-acct-sel').value='';
+    document.getElementById('m-amt').value='';
+    document.getElementById('m-amt').dataset.raw='';
+    document.getElementById('m-vendor').value='';
+    document.getElementById('m-memo').value='';
+  }
+  modal.style.display='flex';
+}
+function closeMobileEntryModal(){document.getElementById('mobile-entry-modal').style.display='none';}
+
+async function saveMobileEntry(){
+  const date=document.getElementById('m-date').value;
+  const kind=document.getElementById('m-kind').value;
+  const code=document.getElementById('m-acct-sel').value;
+  const amt=parseInt((document.getElementById('m-amt').dataset.raw||document.getElementById('m-amt').value.replace(/[^0-9]/g,''))||0);
+  if(!date||!code){document.getElementById('m-err').textContent='날짜와 계정과목은 필수입니다';return;}
+  if(amt<=0){document.getElementById('m-err').textContent='금액을 입력하세요';return;}
+  const acct=ACCOUNTS.find(a=>a.code===code)?.name||'';
+  const payload={branch:curBranch,date,kind,code,acct,vendor:document.getElementById('m-vendor').value.trim()||null,memo:document.getElementById('m-memo').value.trim()||null,amt};
+  showLoading(true);
+  const editId=document.getElementById('m-edit-id').value;
+  let error;
+  if(editId){({error}=await sb.from('entries').update(payload).eq('id',editId));}
+  else{({error}=await sb.from('entries').insert(payload));}
+  showLoading(false);
+  if(error){document.getElementById('m-err').textContent=error.message;return;}
+  toast(editId?'수정되었습니다':'저장되었습니다');
+  closeMobileEntryModal();
+  loadEntries();
 }
 function syncMobileFilter(){
   // 모바일 필터값을 PC 필터에 동기화 후 로드
@@ -1583,20 +1992,18 @@ async function deleteEntry(id){
 function closeModal(){document.getElementById('modal-overlay').classList.remove('open')}
 document.getElementById('modal-overlay').addEventListener('click',function(e){if(e.target===this)closeModal()});
 function setLedgerPeriod(dir){
-  const fromEl=document.getElementById('f-from');
-  const toEl=document.getElementById('f-to');
-  // 현재 조회 기간의 from 기준으로 월 이동
-  const base=new Date(fromEl.value||new Date());
-  let y=base.getFullYear(),m=base.getMonth();
-  if(dir==='prev') m-=1;
-  if(dir==='next') m+=1;
-  if(dir==='this'){y=new Date().getFullYear();m=new Date().getMonth();}
-  if(m<0){m=11;y--;}
-  if(m>11){m=0;y++;}
-  const mm=String(m+1).padStart(2,'0');
-  const last=new Date(y,m+1,0).getDate().toString().padStart(2,'0');
-  fromEl.value=`${y}-${mm}-01`;
-  toEl.value=`${y}-${mm}-${last}`;
+  const ySel=document.getElementById('grid-year');
+  const mSel=document.getElementById('grid-month');
+  if(!ySel||!mSel) return;
+  let y=parseInt(ySel.value),m=parseInt(mSel.value)||new Date().getMonth()+1;
+  if(dir==='prev'){m--;if(m<1){m=12;y--;}}
+  if(dir==='next'){m++;if(m>12){m=1;y++;}}
+  if(dir==='this'){y=new Date().getFullYear();m=new Date().getMonth()+1;}
+  ySel.value=y;
+  mSel.value=String(m).padStart(2,'0');
+  // 모바일 필터도 동기화
+  const mm=String(m).padStart(2,'0');
+  const last=new Date(y,m,0).getDate().toString().padStart(2,'0');
   const fm=document.getElementById('f-from-m');if(fm)fm.value=`${y}-${mm}-01`;
   const tm=document.getElementById('f-to-m');if(tm)tm.value=`${y}-${mm}-${last}`;
   loadEntries();
