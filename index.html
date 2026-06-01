@@ -1581,6 +1581,10 @@ function renderMobileCards(data){
       </div>
       <div style="display:flex;border-top:1px solid var(--border);padding:6px 10px;gap:6px;align-items:center">
         <span style="flex:1;font-size:11px">${receiptCell}</span>
+        <label class="btn btn-ghost btn-sm" style="padding:5px 10px;font-size:12px;cursor:pointer" title="영수증 교체">
+          <i class="ti ti-camera"></i>
+          <input type="file" accept="image/*,.pdf" capture="environment" style="display:none" onchange="mobileQuickReceipt(${e.id},this)">
+        </label>
         <button class="btn btn-ghost btn-sm" onclick="openMobileEntryModal(${e.id})" style="padding:5px 14px;font-size:12px"><i class="ti ti-edit"></i> 수정</button>
         <button class="btn btn-ghost btn-sm" onclick="deleteEntry(${e.id})" style="padding:5px 14px;font-size:12px;color:var(--c-accent)"><i class="ti ti-trash"></i> 삭제</button>
       </div>
@@ -1606,6 +1610,10 @@ function openMobileEntryModal(id){
     document.getElementById('m-amt').dataset.raw=String(e.amt);
     document.getElementById('m-vendor').value=e.vendor||'';
     document.getElementById('m-memo').value=e.memo||'';
+    // 기존 영수증 url 보존 (새 파일 없으면 유지)
+    document.getElementById('m-receipt-file').dataset.existingUrl=e.receipt_url||'';
+    const nm=document.getElementById('m-receipt-name');
+    if(nm) nm.textContent=e.receipt_url?'기존 첨부 있음 (새 파일 선택 시 교체)':'선택된 파일 없음';
   } else {
     document.getElementById('mobile-entry-title').textContent='내역 추가';
     document.getElementById('m-edit-id').value='';
@@ -1620,6 +1628,25 @@ function openMobileEntryModal(id){
   modal.style.display='flex';
 }
 
+
+// 모바일 카드에서 영수증만 빠르게 교체
+async function mobileQuickReceipt(entryId, input){
+  const file=input.files[0];
+  if(!file) return;
+  showLoading(true);
+  const ext=file.name.split('.').pop();
+  const branchMap={'남동탄 분원':'namdongtan','수원 분원':'suwon','장안 분원':'jangan','서수원 분원':'seosuwon','운정 1분원':'unjeong1','운정 2분원':'unjeong2','테스트JLS':'test'};
+  const safeBranch=branchMap[curBranch]||curBranch.replace(/[^a-zA-Z0-9_-]/g,'_');
+  const path=`${safeBranch}/entry_${entryId}_${Date.now()}.${ext}`;
+  const{error:upErr}=await sb.storage.from('receipts').upload(path,file,{upsert:true});
+  if(upErr){showLoading(false);toast('업로드 오류: '+upErr.message);return;}
+  const{data:{publicUrl}}=sb.storage.from('receipts').getPublicUrl(path);
+  const{error:dbErr}=await sb.from('entries').update({receipt_url:publicUrl}).eq('id',entryId);
+  showLoading(false);
+  if(dbErr){toast('저장 오류: '+dbErr.message);return;}
+  toast('영수증 첨부 완료');
+  loadEntries();
+}
 function mReceiptPreview(input){
   const file=input.files[0];
   if(!file) return;
@@ -1657,13 +1684,17 @@ async function saveMobileEntry(){
   if(amt<=0){document.getElementById('m-err').textContent='금액을 입력하세요';return;}
   const acct=ACCOUNTS.find(a=>a.code===code)?.name||'';
   // 영수증 업로드
-  let receipt_url=null;
-  const mFile=document.getElementById('m-receipt-file')?.files[0];
+  const mFileEl=document.getElementById('m-receipt-file');
+  const mFile=mFileEl?.files[0];
+  let receipt_url=mFileEl?.dataset.existingUrl||null; // 기본값: 기존 url 유지
   if(mFile){
     const ext=mFile.name.split('.').pop();
-    const fname=`receipts/${curBranch}/${Date.now()}.${ext}`;
+    const branchMap={'남동탄 분원':'namdongtan','수원 분원':'suwon','장안 분원':'jangan','서수원 분원':'seosuwon','운정 1분원':'unjeong1','운정 2분원':'unjeong2','테스트JLS':'test'};
+    const safeBranch=branchMap[curBranch]||curBranch.replace(/[^a-zA-Z0-9_-]/g,'_');
+    const fname=`${safeBranch}/entry_${Date.now()}.${ext}`;
     const{data:upData,error:upErr}=await sb.storage.from('receipts').upload(fname,mFile,{upsert:true});
     if(!upErr&&upData) receipt_url=sb.storage.from('receipts').getPublicUrl(fname).data.publicUrl;
+    else if(upErr) toast('영수증 업로드 오류: '+upErr.message);
   }
   const payload={branch:curBranch,date,kind,code,acct,vendor:document.getElementById('m-vendor').value.trim()||null,memo:document.getElementById('m-memo').value.trim()||null,amt,receipt_url};
   showLoading(true);
