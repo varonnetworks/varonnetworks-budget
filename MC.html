@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>남동탄 정상어학원 · 정기상담 체크</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+  :root{
+    --paper:#FAF7F0;
+    --card:#FFFFFF;
+    --ink:#21283B;
+    --ink-soft:#5B6377;
+    --border:#E4DCC9;
+    --gold:#B8902F;
+    --gold-soft:#F1E4C4;
+    --green:#3F7A5C;
+    --green-soft:#DCEBE2;
+    --amber:#C98A2C;
+    --amber-soft:#F6E7CE;
+    --red:#A63D40;
+    --red-soft:#F5DEDE;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Apple SD Gothic Neo','Malgun Gothic','Pretendard',-apple-system,sans-serif;
+    padding:28px 20px 60px;
+  }
+  .wrap{max-width:1120px;margin:0 auto;}
+  header{
+    display:flex;justify-content:space-between;align-items:flex-end;
+    margin-bottom:22px;flex-wrap:wrap;gap:12px;
+  }
+  h1{
+    font-family:Georgia,'Iowan Old Style','Times New Roman',serif;
+    font-size:26px;font-weight:600;margin:0 0 4px;letter-spacing:-0.2px;
+  }
+  .sub{color:var(--ink-soft);font-size:13.5px;}
+  .sem-input{
+    border:none;background:transparent;font-family:inherit;font-size:13.5px;
+    color:var(--ink-soft);border-bottom:1px dashed var(--border);padding:2px 2px;
+    width:160px;
+  }
+  .sem-input:focus{outline:none;border-bottom-color:var(--gold);}
+  #setupBanner{
+    display:none;background:var(--amber-soft);border:1px solid var(--amber);
+    border-radius:10px;padding:16px 18px;margin-bottom:20px;font-size:13.5px;line-height:1.6;
+  }
+  #setupBanner b{color:var(--amber);}
+  #setupBanner code{background:#fff;padding:1px 6px;border-radius:4px;font-size:12.5px;}
+  .rounds{display:flex;gap:14px;margin-bottom:22px;flex-wrap:wrap;}
+  .round-card{
+    flex:1;min-width:210px;background:var(--card);border:1px solid var(--border);
+    border-radius:10px;padding:14px 16px;
+  }
+  .round-card .rname{font-weight:600;font-size:14.5px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;}
+  .round-card .rname span.tag{
+    font-size:11px;padding:2px 8px;border-radius:20px;font-weight:500;
+  }
+  .tag.ok{background:var(--green-soft);color:var(--green);}
+  .tag.warn{background:var(--amber-soft);color:var(--amber);}
+  .tag.late{background:var(--red-soft);color:var(--red);}
+  .round-card input[type=date]{
+    border:1px solid var(--border);border-radius:6px;padding:4px 6px;font-size:12.5px;
+    color:var(--ink);font-family:inherit;margin-bottom:8px;width:100%;
+  }
+  .bar-track{height:6px;background:var(--border);border-radius:4px;overflow:hidden;margin-bottom:6px;}
+  .bar-fill{height:100%;background:var(--gold);}
+  .round-card .count{font-size:12px;color:var(--ink-soft);}
+  .toolbar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center;}
+  .toolbar select, .toolbar input[type=text]{
+    padding:9px 12px;border:1px solid var(--border);border-radius:8px;
+    font-size:13.5px;font-family:inherit;background:var(--card);color:var(--ink);
+  }
+  .toolbar select{min-width:140px;}
+  .toolbar input[type=text]{flex:1;min-width:160px;}
+  button{
+    font-family:inherit;font-size:13px;font-weight:600;border:none;border-radius:8px;
+    padding:9px 14px;cursor:pointer;transition:opacity .15s;
+  }
+  button:hover{opacity:.85;}
+  .btn-gold{background:var(--ink);color:#fff;}
+  .btn-outline{background:var(--card);color:var(--ink);border:1px solid var(--border);}
+  #file-input{display:none;}
+  table{width:100%;border-collapse:collapse;background:var(--card);border-radius:10px;overflow:hidden;border:1px solid var(--border);}
+  thead th{
+    text-align:left;font-size:12px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.4px;
+    padding:10px 12px;border-bottom:1px solid var(--border);background:#F4EFE2;
+  }
+  thead th.center{text-align:center;}
+  tbody td{padding:10px 12px;border-bottom:1px solid var(--border);font-size:14px;vertical-align:middle;}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:#FBF9F3;}
+  .name-cell{font-weight:600;}
+  .meta-cell{color:var(--ink-soft);font-size:12.5px;}
+  .round-cell{display:flex;justify-content:center;}
+  .check-box{
+    width:24px;height:24px;border-radius:7px;border:2px solid var(--border);
+    display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;
+    background:#fff;color:#fff;flex-shrink:0;
+  }
+  .check-box.done{background:var(--green);border-color:var(--green);}
+  .check-box.late{border-color:var(--red);}
+  .check-box.warn{border-color:var(--amber);}
+  .note-input{
+    width:100%;border:1px solid transparent;border-radius:6px;padding:6px 8px;font-family:inherit;font-size:13px;
+    background:transparent;
+  }
+  .note-input:hover{border-color:var(--border);}
+  .note-input:focus{outline:none;border-color:var(--gold);background:#fff;}
+  .del-btn{background:transparent;color:var(--ink-soft);font-size:16px;padding:2px 6px;}
+  .del-btn:hover{color:var(--red);}
+  .empty{padding:40px;text-align:center;color:var(--ink-soft);font-size:14px;}
+  .add-form{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+  .add-form input{padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;}
+  .toast{
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+    background:var(--ink);color:#fff;padding:10px 18px;border-radius:20px;font-size:13px;
+    opacity:0;transition:opacity .25s;pointer-events:none;
+  }
+  .toast.show{opacity:1;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>남동탄 정상어학원 · 정기상담 체크</h1>
+      <div class="sub"><input id="semesterInput" class="sem-input" value=""> · 학생 1인당 학기 중 3회 상담</div>
+    </div>
+    <div style="text-align:right;font-size:12px;color:var(--ink-soft);" id="lastSaved"></div>
+  </header>
+  <div id="setupBanner">
+    <b>⚠ Supabase 연결이 아직 안 되어 있어요.</b><br>
+    이 파일 안의 <code>SUPABASE_URL</code>, <code>SUPABASE_ANON_KEY</code> 값을 본인의 Supabase 프로젝트 정보로 바꿔주세요.
+    (설정 방법은 채팅에서 안내해드린 내용을 참고하세요.)
+  </div>
+  <div class="rounds" id="roundsBar"></div>
+  <div class="toolbar">
+    <select id="teacherFilter" onchange="onTeacherFilterChange()"></select>
+    <select id="classFilter" onchange="render()"></select>
+    <input type="text" id="searchBox" placeholder="이름 · 전화번호 검색">
+    <button class="btn-outline" onclick="document.getElementById('file-input').click()">엑셀 명단 업로드</button>
+    <input id="file-input" type="file" accept=".xlsx,.xls">
+    <button class="btn-outline" onclick="exportExcel()">엑셀로 내보내기</button>
+    <button class="btn-gold" onclick="toggleAddForm()">학생 추가</button>
+  </div>
+  <div class="add-form" id="addForm" style="display:none;">
+    <input id="addName" placeholder="이름">
+    <input id="addPhone" placeholder="전화번호">
+    <input id="addClass" placeholder="반 이름">
+    <input id="addTeacher" placeholder="담임선생님">
+    <button class="btn-gold" onclick="addStudent()">추가</button>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th style="width:15%;">이름</th>
+        <th style="width:15%;">전화번호</th>
+        <th style="width:14%;">반</th>
+        <th style="width:12%;">담임선생님</th>
+        <th class="center" style="width:7%;">1차</th>
+        <th class="center" style="width:7%;">2차</th>
+        <th class="center" style="width:7%;">3차</th>
+        <th style="width:16%;">비고</th>
+        <th style="width:7%;"></th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+  <div class="empty" id="emptyMsg" style="display:none;">학생이 없습니다. 엑셀 명단을 업로드하거나 학생을 직접 추가하세요.</div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+// ====== Supabase 설정: 아래 두 값을 본인 프로젝트 정보로 교체하세요 ======
+const SUPABASE_URL = 'https://ktizqdrhndefvoeltjko.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt0aXpxZHJobmRlZnZvZWx0amtvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwOTcxOTcsImV4cCI6MjA5MzY3MzE5N30.p3v9VZSgTr_ngL-QN8L_7hoORk1auTqMk8l6NWuE0Yk';
+// =====================================================================
+let supabase = null;
+let data = { semester:'', rounds:[{label:'1차',due:''},{label:'2차',due:''},{label:'3차',due:''}], students:[] };
+let configured = SUPABASE_URL !== 'YOUR_SUPABASE_URL' && SUPABASE_ANON_KEY !== 'YOUR_SUPABASE_ANON_KEY';
+if(configured){
+  supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+} else {
+  document.addEventListener('DOMContentLoaded', ()=>{
+    document.getElementById('setupBanner').style.display = 'block';
+  });
+}function todayStr(){ return new Date().toISOString().slice(0,10); }
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2600);
+}function markSaved(){
+  document.getElementById('lastSaved').textContent = '동기화됨 · ' + new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
+}async function loadData(){
+  if(!configured) return;
+  try{
+    const { data: settingsRow, error: sErr } = await supabase.from('consult_settings').select('*').eq('id', 1).single();
+    if(sErr) throw sErr;
+    const { data: studentRows, error: stErr } = await supabase.from('consult_students').select('*').order('name', {ascending:true});
+    if(stErr) throw stErr;
+    data.semester = settingsRow.semester || '';
+    data.rounds = [
+      {label:'1차', due: settingsRow.round1_due || ''},
+      {label:'2차', due: settingsRow.round2_due || ''},
+      {label:'3차', due: settingsRow.round3_due || ''}
+    ];
+    data.students = (studentRows||[]).map(r=>({
+      id:r.id, name:r.name, phone:r.phone||'', className:r.class_name||'', teacher:r.teacher||'',
+      round1: !!r.round1, round2: !!r.round2, round3: !!r.round3, note: r.note||''
+    }));
+    document.getElementById('semesterInput').value = data.semester;
+    render();
+    markSaved();
+  }catch(e){
+    console.error('불러오기 실패', e);
+    showToast('Supabase에서 데이터를 불러오지 못했어요. 설정을 확인해주세요.');
+  }
+}async function updateSettings(patch){
+  Object.assign(data, patch.local || {});
+  if(!configured) return;
+  try{
+    const { error } = await supabase.from('consult_settings').update(patch.remote).eq('id', 1);
+    if(error) throw error;
+    markSaved();
+  }catch(e){
+    console.error(e);
+    showToast('설정 저장에 실패했어요.');
+  }
+}document.getElementById('semesterInput').addEventListener('change', (e)=>{
+  updateSettings({ local:{semester:e.target.value}, remote:{semester:e.target.value} });
+});
+function updateRoundDue(ri, val){
+  data.rounds[ri].due = val;
+  const col = 'round' + (ri+1) + '_due';
+  updateSettings({ local:{}, remote:{ [col]: val } });
+  render();
+}function statusOf(due, done){
+  if(done) return 'done';
+  const today = todayStr();
+  if(due && due < today) return 'late';
+  if(due){
+    const warnDate = new Date(due); warnDate.setDate(warnDate.getDate()-7);
+    if(warnDate.toISOString().slice(0,10) <= today) return 'warn';
+  }
+  return 'pending';
+}function getFilteredStudents(){
+  const q = document.getElementById('searchBox').value.trim().toLowerCase();
+  const teacherSel = document.getElementById('teacherFilter').value;
+  const classSel = document.getElementById('classFilter').value;
+  return data.students.filter(s=>{
+    if(teacherSel && s.teacher !== teacherSel) return false;
+    if(classSel && s.className !== classSel) return false;
+    if(q && !((s.name||'').toLowerCase().includes(q) || (s.phone||'').toLowerCase().includes(q))) return false;
+    return true;
+  });
+}function populateFilters(){
+  const teacherSel = document.getElementById('teacherFilter');
+  const classSel = document.getElementById('classFilter');
+  const curTeacher = teacherSel.value;
+  const curClass = classSel.value;
+  const teachers = Array.from(new Set(data.students.map(s=>s.teacher).filter(Boolean))).sort((a,b)=>a.localeCompare(b,'ko-KR'));
+  teacherSel.innerHTML = '<option value="">담임선생님 전체</option>' + teachers.map(t=>`<option value="${t}">${t}</option>`).join('');
+  if(teachers.includes(curTeacher)) teacherSel.value = curTeacher;
+  const classPool = curTeacher && teachers.includes(curTeacher)
+    ? data.students.filter(s=>s.teacher===curTeacher)
+    : data.students;
+  const classes = Array.from(new Set(classPool.map(s=>s.className).filter(Boolean))).sort((a,b)=>a.localeCompare(b,'ko-KR'));
+  classSel.innerHTML = '<option value="">반 전체</option>' + classes.map(c=>`<option value="${c}">${c}</option>`).join('');
+  if(classes.includes(curClass)) classSel.value = curClass;
+}function onTeacherFilterChange(){
+  document.getElementById('classFilter').value = '';
+  render();
+}function render(){
+  populateFilters();
+  renderRoundsBar();
+  renderTable();
+}function renderRoundsBar(){
+  const bar = document.getElementById('roundsBar');
+  bar.innerHTML = '';
+  const scope = getFilteredStudents();
+  data.rounds.forEach((r, ri)=>{
+    const key = 'round' + (ri+1);
+    const total = scope.length;
+    const done = scope.filter(s=>s[key]).length;
+    const pct = total ? Math.round(done/total*100) : 0;
+    const anyLate = scope.some(s=> !s[key] && statusOf(r.due, false)==='late');
+    const anyWarn = scope.some(s=> !s[key] && statusOf(r.due, false)==='warn');
+    let tagHtml = '';
+    if(total>0){
+      if(pct===100) tagHtml = '<span class="tag ok">완료</span>';
+      else if(anyLate) tagHtml = '<span class="tag late">지연 있음</span>';
+      else if(anyWarn) tagHtml = '<span class="tag warn">임박</span>';
+    }
+    const card = document.createElement('div');
+    card.className = 'round-card';
+    card.innerHTML = `
+      <div class="rname"><span>${r.label} 상담</span>${tagHtml}</div>
+      <input type="date" value="${r.due||''}" onchange="updateRoundDue(${ri}, this.value)">
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+      <div class="count">${done} / ${total}명 완료 (${pct}%)</div>
+    `;
+    bar.appendChild(card);
+  });
+}function roundCellHtml(s, ri){
+  const key = 'round' + (ri+1);
+  const due = data.rounds[ri].due;
+  const done = !!s[key];
+  const st = statusOf(due, done);
+  return `<div class="round-cell">
+    <div class="check-box ${st==='done'?'done':''} ${st==='late'?'late':''} ${st==='warn'?'warn':''}"
+         title="${done ? '완료 (클릭하면 취소)' : (st==='late'?'기한 지남 · 클릭하면 완료 처리':(st==='warn'?'마감 임박 · 클릭하면 완료 처리':'클릭하면 완료 처리'))}"
+         onclick="toggleConsult(${s.id}, ${ri})">${done?'✓':''}</div>
+  </div>`;
+}function studentRowHtml(s){
+  return `
+    <td class="name-cell">${s.name}</td>
+    <td class="meta-cell">${s.phone||'-'}</td>
+    <td class="meta-cell">${s.className||'-'}</td>
+    <td class="meta-cell">${s.teacher||'-'}</td>
+    <td>${roundCellHtml(s,0)}</td>
+    <td>${roundCellHtml(s,1)}</td>
+    <td>${roundCellHtml(s,2)}</td>
+    <td><input class="note-input" value="${(s.note||'').replace(/"/g,'&quot;')}" placeholder="메모" onchange="updateNote(${s.id}, this.value)"></td>
+    <td><button class="del-btn" onclick="deleteStudent(${s.id})" title="삭제">×</button></td>
+  `;
+}function renderTable(){
+  const tbody = document.getElementById('tbody');
+  tbody.innerHTML = '';
+  const filtered = getFilteredStudents();
+  document.getElementById('emptyMsg').style.display = filtered.length ? 'none' : 'block';
+  filtered.forEach(s=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = studentRowHtml(s);
+    tbody.appendChild(tr);
+  });
+}async function toggleConsult(id, ri){
+  const s = data.students.find(x=>x.id===id);
+  if(!s) return;
+  const key = 'round' + (ri+1);
+  const newVal = !s[key];
+  s[key] = newVal; // 낙관적 업데이트
+  render();
+  if(!configured) return;
+  try{
+    const { error } = await supabase.from('consult_students').update({ [key]: newVal }).eq('id', id);
+    if(error) throw error;
+    markSaved();
+  }catch(e){
+    console.error(e);
+    s[key] = !newVal; // 롤백
+    render();
+    showToast('저장에 실패했어요. 인터넷 연결을 확인해주세요.');
+  }
+}async function updateNote(id, value){
+  const s = data.students.find(x=>x.id===id);
+  if(!s) return;
+  const prev = s.note;
+  s.note = value;
+  if(!configured) return;
+  try{
+    const { error } = await supabase.from('consult_students').update({ note: value }).eq('id', id);
+    if(error) throw error;
+    markSaved();
+  }catch(e){
+    console.error(e);
+    s.note = prev;
+    render();
+    showToast('메모 저장에 실패했어요.');
+  }
+}async function deleteStudent(id){
+  const s = data.students.find(x=>x.id===id);
+  if(!s) return;
+  if(!confirm(`${s.name} 학생을 명단에서 삭제할까요?`)) return;
+  if(configured){
+    try{
+      const { error } = await supabase.from('consult_students').delete().eq('id', id);
+      if(error) throw error;
+    }catch(e){
+      console.error(e);
+      showToast('삭제에 실패했어요.');
+      return;
+    }
+  }
+  data.students = data.students.filter(x=>x.id!==id);
+  render();
+  markSaved();
+}function toggleAddForm(){
+  const f = document.getElementById('addForm');
+  f.style.display = f.style.display==='none' ? 'flex' : 'none';
+}async function addStudent(){
+  const name = document.getElementById('addName').value.trim();
+  if(!name){ showToast('이름을 입력해주세요.'); return; }
+  const phone = document.getElementById('addPhone').value.trim();
+  const className = document.getElementById('addClass').value.trim();
+  const teacher = document.getElementById('addTeacher').value.trim();
+  if(!configured){
+    showToast('Supabase 설정을 먼저 완료해주세요.');
+    return;
+  }
+  try{
+    const { data: inserted, error } = await supabase.from('consult_students')
+      .insert({ name, phone, class_name: className, teacher, round1:false, round2:false, round3:false, note:'' })
+      .select().single();
+    if(error) throw error;
+    data.students.push({ id:inserted.id, name, phone, className, teacher, round1:false, round2:false, round3:false, note:'' });
+    document.getElementById('addName').value='';
+    document.getElementById('addPhone').value='';
+    document.getElementById('addClass').value='';
+    document.getElementById('addTeacher').value='';
+    render();
+    markSaved();
+  }catch(e){
+    console.error(e);
+    showToast('학생 추가에 실패했어요.');
+  }
+}document.getElementById('searchBox').addEventListener('input', render);
+document.getElementById('file-input').addEventListener('change', async function(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  if(!configured){
+    showToast('Supabase 설정을 먼저 완료해주세요.');
+    e.target.value = '';
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = async function(evt){
+    try{
+      const wb = XLSX.read(evt.target.result, {type:'array'});
+      const sheet = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet, {defval:''});
+      const toInsert = [];
+      rows.forEach(row=>{
+        const name = String(row['이름']||row['name']||'').trim();
+        if(!name) return;
+        const phone = String(row['전화번호']||row['phone']||'').trim();
+        const className = String(row['반 이름']||row['반이름']||row['반 명']||'').trim();
+        const teacher = String(row['담임선생님']||row['담임 선생님']||row['담임']||'').trim();
+        const exists = data.students.some(s=> s.name===name && s.phone===phone);
+        if(!exists){
+          toInsert.push({ name, phone, class_name: className, teacher, round1:false, round2:false, round3:false, note:'' });
+        }
+      });
+      if(toInsert.length===0){
+        showToast('추가할 새 학생이 없습니다 (모두 중복).');
+        e.target.value=''; return;
+      }
+      const { data: inserted, error } = await supabase.from('consult_students').insert(toInsert).select();
+      if(error) throw error;
+      inserted.forEach(r=>{
+        data.students.push({ id:r.id, name:r.name, phone:r.phone, className:r.class_name, teacher:r.teacher, round1:false, round2:false, round3:false, note:'' });
+      });
+      render();
+      markSaved();
+      showToast(`${inserted.length}명 추가되었습니다.`);
+    }catch(err){
+      console.error(err);
+      showToast('엑셀 업로드에 실패했어요.');
+    }
+    e.target.value = '';
+  };
+  reader.readAsArrayBuffer(file);
+});
+function exportExcel(){
+  const rows = getFilteredStudents().map(s=>({
+    '이름': s.name, '전화번호': s.phone, '반 이름': s.className, '담임선생님': s.teacher,
+    '1차 완료여부': s.round1 ? '완료' : '미완료',
+    '2차 완료여부': s.round2 ? '완료' : '미완료',
+    '3차 완료여부': s.round3 ? '완료' : '미완료',
+    '비고': s.note || ''
+  }));
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, '상담현황');
+  const fname = `${data.semester||'상담현황'}_${todayStr()}.xlsx`;
+  XLSX.writeFile(wb, fname);
+}if(configured){
+  loadData();
+} else {
+  render();
+}</script>
+</body>
+</html>
