@@ -619,6 +619,7 @@ td.amt-inc{color:var(--c-income);font-weight:600}
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;padding:0 2px">
       <button class="btn btn-primary btn-sm" onclick="btxRegisterSelected()"><i class="ti ti-link"></i> 매칭</button>
       <button class="btn btn-ghost btn-sm" onclick="openBtxToEntryModal()"><i class="ti ti-plus"></i> 거래내역 등록</button>
+      <button class="btn btn-ghost btn-sm" id="btx-del-btn" onclick="deleteBtxSelected()" style="display:none;color:var(--c-accent)"><i class="ti ti-trash"></i> 삭제</button>
       <span style="margin-left:auto;font-size:12px;color:var(--text3);align-self:center"><span id="btx-sel-cnt">0</span>건 선택</span>
     </div>
 
@@ -813,7 +814,7 @@ td.amt-inc{color:var(--c-income);font-weight:600}
         </select>
       </div>
       <div class="fgroup" style="grid-column:1/-1"><label>계정과목 *</label>
-        <select id="m-acct-sel" style="width:100%;border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:13px"></select>
+        <select id="m-acct-sel" style="width:100%;border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:13px" onchange="showAcctGuide(this.value)"></select>
       </div>
       <div class="fgroup"><label>금액 *</label><input type="text" id="m-amt" placeholder="0" oninput="formatAmt(this)" inputmode="numeric"></div>
       <div class="fgroup"><label>거래처</label><input type="text" id="m-vendor" placeholder="거래처명"></div>
@@ -965,8 +966,8 @@ const ACCOUNTS=[
   {code:'817',name:'세금과공과금'},{code:'818',name:'감가상각비'},{code:'819',name:'지급임차료'},
   {code:'820',name:'수선비'},{code:'821',name:'보험료'},{code:'822',name:'차량유지비'},
   {code:'824',name:'운반비'},{code:'825',name:'교육훈련비'},{code:'826',name:'도서인쇄비'},{code:'827',name:'회의비'},
-  {code:'830',name:'소모품비'},{code:'831',name:'지급수수료'},{code:'833',name:'광고선전비'},
-  {code:'834',name:'판매촉진비'},{code:'841',name:'행사비'},{code:'842',name:'기타잡비'},
+  {code:'830',name:'소모품비'},{code:'212',name:'비품'},{code:'831',name:'지급수수료'},{code:'833',name:'광고선전비'},
+  {code:'834',name:'판매촉진비'},{code:'842',name:'기타잡비'},
   {code:'103',name:'보통예금'},{code:'253',name:'미지급금'},{code:'260',name:'단기차입금'},
   {code:'901',name:'이자수익'},{code:'930',name:'잡이익'},{code:'931',name:'이자비용'},{code:'960',name:'잡손실'}
 ];
@@ -1194,7 +1195,7 @@ function renderGrid(data){
     const selAcct=document.createElement('select');selAcct.className='grid-cell';
     const o0=document.createElement('option');o0.value='';o0.textContent='선택';selAcct.appendChild(o0);
     ACCOUNTS.forEach(a=>{const o=document.createElement('option');o.value=a.code;o.textContent=a.code+' '+a.name;if(a.code===e.code)o.selected=true;selAcct.appendChild(o);});
-    selAcct.addEventListener('change',()=>gridSaveCellAcct(e.id,selAcct));
+    selAcct.addEventListener('change',()=>{gridSaveCellAcct(e.id,selAcct);showAcctGuide(selAcct.value);});
     tdAcct.appendChild(selAcct);tr.appendChild(tdAcct);
 
     // 소분류
@@ -1290,7 +1291,7 @@ function renderGrid(data){
     <td style="padding:3px 4px"><input type="date" id="nr-date" value="${today}" class="grid-cell" style="min-width:100px"></td>
     <td style="padding:3px 2px"><select id="nr-kind" class="grid-cell"><option value="지출">지출</option><option value="입금">입금</option></select></td>
     <td style="padding:3px 2px"><select id="nr-pm" class="grid-cell"><option value="">-</option><option value="계좌이체">계좌이체</option><option value="체크카드">체크카드</option><option value="신용카드">신용카드</option><option value="현금">현금</option><option value="기타">기타</option></select></td>
-    <td style="padding:3px 2px"><select id="nr-acct" class="grid-cell" onchange="updateNrSub()"><option value="">계정과목 선택</option>${acctOptsTr}</select></td>
+    <td style="padding:3px 2px"><select id="nr-acct" class="grid-cell" onchange="updateNrSub();showAcctGuide(this.value)"><option value="">계정과목 선택</option>${acctOptsTr}</select></td>
     <td style="padding:3px 2px" id="nr-sub-cell"><span style="font-size:11px;color:var(--text3)">-</span></td>
     <td style="padding:3px 2px"><div class="vendor-wrap"><input type="text" id="nr-vendor" placeholder="코드 또는 거래처명" class="grid-cell" oninput="filterVendorDrop('nr-vendor','nr-vendor-dd')" onblur="setTimeout(()=>hideVendorDrop('nr-vendor-dd'),150)" autocomplete="off"><div id="nr-vendor-dd" class="vendor-dropdown"></div></div></td>
     <td style="padding:3px 4px"><input type="text" id="nr-amt" placeholder="0" oninput="formatAmt(this)" inputmode="numeric" class="grid-cell" style="text-align:right;min-width:70px"></td>
@@ -1299,6 +1300,7 @@ function renderGrid(data){
     <td style="padding:3px 4px;text-align:center"><span style="font-size:11px;color:var(--text3)">-</span></td>
     <td style="padding:3px 4px;text-align:center"><button onclick="saveNewRow()" style="background:var(--c-primary);color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:11px;padding:4px 10px;white-space:nowrap">저장</button></td>`;
   tbody.appendChild(emptyTr);
+  showAcctGuide('all'); // NEW 행 생성 시 전체 가이드 표시
 
   updateBundleInfo(data);
 }
@@ -1406,6 +1408,7 @@ function updateNrSub(){
 }
 
 async function saveNewRow(){
+  document.getElementById('acct-guide-box').style.display='none';
   const date=document.getElementById('nr-date')?.value;
   const kind=document.getElementById('nr-kind')?.value;
   const code=document.getElementById('nr-acct')?.value;
@@ -1544,12 +1547,12 @@ async function doBankImport(){
     const rec=getRecommend(tx.description);
     const acctCode=tx.draft_acct_code||rec.acct_code||'842';
     const acctObj=ACCOUNTS.find(a=>a.code===acctCode);
-    return {branch:curBranch,date:tx.tx_date,kind:tx.draft_kind||(tx.withdrawal>0?'지출':'입금'),code:acctCode,acct:acctObj?.name||'기타잡비',sub_acct:tx.draft_sub_acct||null,vendor:tx.draft_vendor||rec.vendor||null,memo:tx.draft_memo||tx.description||null,amt:tx.withdrawal>0?tx.withdrawal:tx.deposit,qty:1,payment_method:tx.payment_method||'계좌이체',bank_tx_id:tx.id};
+    return {branch:curBranch,date:tx.tx_date,kind:tx.draft_kind||(tx.withdrawal>0?'지출':'입금'),code:acctCode,acct:acctObj?.name||'기타잡비',sub_acct:tx.draft_sub_acct||null,vendor:tx.draft_vendor||_txPerson(tx)||rec.vendor||null,memo:tx.draft_memo||null,amt:tx.withdrawal>0?tx.withdrawal:tx.deposit,qty:1,payment_method:_txPaymentMethod(tx),bank_tx_id:tx.id};
   });
   const{error}=await sb.from('entries').insert(entries);
   if(error){showLoading(false);document.getElementById('import-err').textContent=error.message;return;}
   // bank_transactions 처리완료로 업데이트
-  await sb.from('bank_transactions').update({status:'처리완료'}).in('id',txs.map(t=>t.id));
+  await sb.from('bank_transactions').update({status:'처리완료',match_status:'매칭',linked_entry_ids:'by_import'}).in('id',txs.map(t=>t.id));
   showLoading(false);
   closeBankImportModal();
   toast(`${entries.length}건 불러오기 완료! 필요없는 항목은 체크 후 삭제하세요.`);
@@ -2538,7 +2541,7 @@ async function loadSupplyCycle(){
     return;
   }
   el.innerHTML=(supplies||[]).map(s=>{
-    const purchases=(ents||[]).filter(e=>(e.memo||'').includes(s.name));
+    const purchases=(ents||[]).filter(e=>(e.memo||'').includes(s.name)||(e.vendor||'').includes(s.name)||(e.sub_acct||'').includes(s.name));
     if(purchases.length===0){
       return `<div class="card supply-item">
         <div style="flex:1"><div class="supply-name" style="font-size:15px">${s.name} <span style="font-size:11px;color:var(--text3)">(단위: ${s.unit})</span></div>
@@ -3038,7 +3041,7 @@ function renderBtxGrid(){
         <select onchange="btxUpdateDraft(${tx.id},'payment_method',this.value)" style="border:1px solid var(--border);border-radius:5px;padding:3px 4px;font-size:11px;width:80px">${pmOpts}</select>
       </td>
       <td style="padding:4px 2px">
-        <select onchange="btxUpdateDraft(${tx.id},'draft_acct_code',this.value);btxUpdateDraft(${tx.id},'draft_acct',this.options[this.selectedIndex].text.slice(4))" style="border:1px solid var(--border);border-radius:5px;padding:3px 4px;font-size:11px;width:115px">
+        <select onchange="btxUpdateDraft(${tx.id},'draft_acct_code',this.value);btxUpdateDraft(${tx.id},'draft_acct',this.options[this.selectedIndex].text.slice(4));showAcctGuide(this.value)" style="border:1px solid var(--border);border-radius:5px;padding:3px 4px;font-size:11px;width:115px">
           <option value="">선택</option>${acctOpts}
         </select>
       </td>
@@ -3067,6 +3070,8 @@ function btxToggleAll(chk){
 function updateBtxSelCount(){
   const cnt=document.querySelectorAll('.btx-chk:checked').length;
   document.getElementById('btx-sel-cnt').textContent=cnt;
+  const delBtn=document.getElementById('btx-del-btn');
+  if(delBtn) delBtn.style.display=cnt>0?'':'none';
 }
 
 function getSelectedTxIds(){
@@ -3080,6 +3085,18 @@ async function btxSetStatus(status){
   await loadBankTx();
 }
 
+
+async function deleteBtxSelected(){
+  const ids=[...document.querySelectorAll('.btx-chk:checked')].map(c=>parseInt(c.dataset.id)).filter(Boolean);
+  if(!ids.length) return;
+  if(!confirm(`선택한 ${ids.length}건을 삭제할까요?`)) return;
+  showLoading(true);
+  const{error}=await sb.from('bank_transactions').delete().in('id',ids);
+  showLoading(false);
+  if(error){toast('삭제 오류: '+error.message);return;}
+  toast(`${ids.length}건 삭제 완료`);
+  loadBankTx();
+}
 async function btxRegisterSelected(){
   const ids=getSelectedTxIds();
   if(!ids.length){alert('등록할 항목을 선택해주세요');return;}
@@ -3091,11 +3108,11 @@ async function btxRegisterSelected(){
     const rec=getRecommend(tx.description);
     const acctCode=tx.draft_acct_code||rec.acct_code||'';
     const acctObj=ACCOUNTS.find(a=>a.code===acctCode);
-    return {branch:curBranch,date:tx.tx_date,kind:tx.draft_kind||(tx.withdrawal>0?'지출':'입금'),code:acctCode,acct:acctObj?.name||tx.draft_acct||'',sub_acct:tx.draft_sub_acct||null,vendor:tx.draft_vendor||rec.vendor||null,memo:tx.draft_memo||tx.description||null,amt:tx.withdrawal>0?tx.withdrawal:tx.deposit,qty:tx.draft_qty||1,receipt_url:tx.draft_receipt_url||null,payment_method:tx.payment_method||'계좌이체',bank_tx_id:tx.id};
+    return {branch:curBranch,date:tx.tx_date,kind:tx.draft_kind||(tx.withdrawal>0?'지출':'입금'),code:acctCode,acct:acctObj?.name||tx.draft_acct||'',sub_acct:tx.draft_sub_acct||null,vendor:tx.draft_vendor||_txPerson(tx)||rec.vendor||null,memo:tx.draft_memo||null,amt:tx.withdrawal>0?tx.withdrawal:tx.deposit,qty:tx.draft_qty||1,receipt_url:tx.draft_receipt_url||null,payment_method:tx.draft_kind?tx.payment_method||'계좌이체':_txPaymentMethod(tx),bank_tx_id:tx.id};
   });
   const{error}=await sb.from('entries').insert(entries);
   if(error){alert('등록 오류: '+error.message);return;}
-  await sb.from('bank_transactions').update({status:'처리완료'}).in('id',ids);
+  await sb.from('bank_transactions').update({status:'처리완료',match_status:'매칭'}).in('id',ids);
   alert(`${txs.length}건 등록 완료!`);
   await loadBankTx();
 }
@@ -3607,6 +3624,18 @@ function _matchScore(e,tx){
 /* runMatching v2 제거됨 */
 
 let forceMatchTx=null, forceMatchEntries=[];
+
+async function deleteBtxSelected(){
+  const ids=[...document.querySelectorAll('.btx-chk:checked')].map(c=>parseInt(c.dataset.id)).filter(Boolean);
+  if(!ids.length) return;
+  if(!confirm(`선택한 ${ids.length}건을 삭제할까요?`)) return;
+  showLoading(true);
+  const{error}=await sb.from('bank_transactions').delete().in('id',ids);
+  showLoading(false);
+  if(error){toast('삭제 오류: '+error.message);return;}
+  toast(`${ids.length}건 삭제 완료`);
+  loadBankTx();
+}
 async function btxRegisterSelected(){
   const ids=getSelectedTxIds();
   if(ids.length!==1){alert('매칭할 계좌내역 1건만 선택해주세요');return;}
@@ -3738,6 +3767,17 @@ function _rawTxDateTime(tx){
   const d=_dateOnly(tx.tx_date||tx.date||tx.transaction_date)||'';
   const time=(tx.tx_time||tx.time||'').toString().slice(0,8);
   return time?`${d}<br><span style="font-size:10px;color:var(--text3)">${time}</span>`:d;
+}
+
+// 계좌내역 적요(description)에서 결제수단 추출
+function _txPaymentMethod(tx){
+  const desc=(tx.description||tx.desc||'').trim();
+  if(desc.includes('체크카드')) return '체크카드';
+  if(desc.includes('신용카드')) return '신용카드';
+  if(desc.includes('계좌이체')||desc.includes('이체')) return '계좌이체';
+  if(desc.includes('현금')) return '현금';
+  if(desc.includes('ATM')) return '현금';
+  return desc||'계좌이체'; // 그대로 쓰거나 기본값
 }
 function _txDesc(tx){return tx.description||tx.desc||tx.summary||tx.raw_desc||'';}
 function _txPerson(tx){return tx.memo||tx.counterparty||tx.payee||tx.payer||tx.client||tx.customer||tx.receiver||tx.sender||tx.requester||tx.beneficiary||'';}
@@ -4099,6 +4139,41 @@ loadSupplies = async function(){
   else await _origLoadSupplies();
 };
 
+
+/* ===== 계정과목 가이드 ===== */
+const ACCT_GUIDE = {
+  '212': { title: '212 비품', desc: '1년 이상·100만원 이상 (복사기·에어컨·가구 등)' },
+  '811': { title: '811 복리후생비', desc: '회식·경조사' },
+  '826': { title: '826 도서인쇄비', desc: '복사·제본·내신자료·교재 제작' },
+  '830': { title: '830 소모품비', desc: '사무용품·복사용지·필기구·생수·청소용품' },
+  '833': { title: '833 광고선전비', desc: '설명회 배포 물품(생수·볼펜·수첩 등)' },
+  '834': { title: '834 판매촉진비', desc: '마켓데이 물품·이벤트 경품' },
+  '842': { title: '842 기타잡비', desc: '위 항목 해당 없는 기타 지출' },
+  '930': { title: '930 잡이익', desc: '본사 지원금(운영비·소모품비·행사비)' }
+};
+
+function showAcctGuide(code) {
+  const box = document.getElementById('acct-guide-box');
+  if (!box) return;
+  if (code === 'all') {
+    // NEW 행 활성 시 전체 가이드 표시
+    document.getElementById('acct-guide-title').style.display='none';
+    const items=Object.values(ACCT_GUIDE);
+    document.getElementById('acct-guide-desc').innerHTML =
+      `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px 16px">`+
+      items.map(g=>`<div><b style="color:#795548">${g.title}</b> &nbsp;${g.desc}</div>`).join('')+
+      `</div>`;
+    box.style.display = 'block';
+    return;
+  }
+  const guide = ACCT_GUIDE[code];
+  if (!guide) { box.style.display='none'; return; }
+  document.getElementById('acct-guide-title').style.display='';
+  document.getElementById('acct-guide-title').textContent = guide.title;
+  document.getElementById('acct-guide-desc').textContent = guide.desc;
+  box.style.display = 'block';
+}
+
 /* ===== 미매칭 계좌내역 → 거래내역 직접 등록 ===== */
 let _bteTargetTx=null;
 
@@ -4127,16 +4202,14 @@ async function openBtxToEntryModal(){
   document.getElementById('bte-date').value=date;
   document.getElementById('bte-kind').value=kind;
   document.getElementById('bte-vendor').value=vendor;
-  document.getElementById('bte-memo').value=desc;
+  document.getElementById('bte-memo').value='';
   document.getElementById('bte-amt').value=amt.toLocaleString('ko-KR');
   document.getElementById('bte-amt').dataset.raw=String(amt);
   document.getElementById('bte-err').textContent='';
 
   // 결제수단 추론 (적요에 "체크"/"신용" 포함 시)
   const pmSel=document.getElementById('bte-pm');
-  if(desc.includes('체크카드')||desc.includes('체크')) pmSel.value='체크카드';
-  else if(desc.includes('신용카드')||desc.includes('신용')) pmSel.value='신용카드';
-  else pmSel.value='계좌이체';
+  pmSel.value=_txPaymentMethod(tx);
 
   // 계정과목 셀렉트 채우기
   const acctSel=document.getElementById('bte-acct');
@@ -4358,5 +4431,14 @@ async function unbundleSelected(){
 }
 
 </script>
+
+<!-- 계정과목 가이드 박스 -->
+<div id="acct-guide-box" style="display:none;position:fixed;bottom:0;left:220px;right:70px;z-index:199;background:#FFFDE7;border-top:1px solid #F9A825;padding:8px 16px;font-size:11px;line-height:1.8">
+  <div style="display:flex;align-items:flex-start;gap:12px;max-width:1400px;margin:0 auto">
+    <span style="font-weight:700;color:#795548;white-space:nowrap;font-size:11px" id="acct-guide-title">계정과목 가이드</span>
+    <div id="acct-guide-desc" style="flex:1;color:#5D4037"></div>
+    <button onclick="document.getElementById('acct-guide-box').style.display='none'" style="background:none;border:none;color:#BCAAA4;cursor:pointer;font-size:14px;padding:0 2px;flex-shrink:0"><i class="ti ti-x"></i></button>
+  </div>
+</div>
 </body>
 </html>
