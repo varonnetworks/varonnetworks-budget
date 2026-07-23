@@ -482,8 +482,8 @@ td.amt-inc{color:var(--c-income);font-weight:600}
               <th style="padding:7px 4px;min-width:100px">소분류</th>
               <th style="padding:7px 4px;min-width:151px;width:151px">거래처</th>
               <th style="padding:7px 2px;min-width:68px;width:68px;text-align:right">금액</th>
-              <th style="padding:7px 4px;min-width:40px;text-align:center">수량</th>
               <th style="padding:7px 4px;min-width:280px;width:280px">적요</th>
+              <th style="padding:7px 4px;min-width:40px;text-align:center">수량</th>
               <th style="padding:7px 4px;min-width:44px;text-align:center">영수증</th>
               <th style="padding:7px 4px;min-width:44px;text-align:center">저장</th>
             </tr>
@@ -559,8 +559,10 @@ td.amt-inc{color:var(--c-income);font-weight:600}
     <div class="supply-tabs">
       <button class="supply-tab active" onclick="showSupplyTab('cycle',this)">구매주기 분석</button>
       <button class="supply-tab" onclick="showSupplyTab('items',this)">소모품 목록 관리</button>
+      <button class="supply-tab" onclick="showSupplyTab('lowest',this)">🏆 최저가 현황</button>
     </div>
     <div id="supply-tab-cycle"><div id="supply-list"></div></div>
+    <div id="supply-tab-lowest" style="display:none"><div id="lowest-price-list"></div></div>
     <div id="supply-tab-items" style="display:none">
       <div class="card">
         <div style="display:flex;gap:8px;margin-bottom:1rem">
@@ -772,6 +774,23 @@ td.amt-inc{color:var(--c-income);font-weight:600}
     <div style="display:flex;gap:8px;justify-content:flex-end">
       <button class="btn btn-ghost btn-sm" onclick="closeBankImportModal()">취소</button>
       <button class="btn btn-primary btn-sm" onclick="doBankImport()"><i class="ti ti-download"></i> 불러오기</button>
+    </div>
+  </div>
+</div>
+
+<!-- 최저가 축하 팝업 -->
+<div id="lp-overlay" onclick="if(event.target===this)closeLowestPricePopup()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:700;align-items:center;justify-content:center;padding:1rem">
+  <div style="background:#fff;border-radius:16px;padding:2rem;width:420px;max-width:95vw;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.18)">
+    <div style="font-size:48px;margin-bottom:8px">🏆</div>
+    <div id="lp-title" style="font-size:18px;font-weight:800;color:var(--c-primary);margin-bottom:8px"></div>
+    <div id="lp-desc" style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:16px"></div>
+    <div style="margin-bottom:12px">
+      <input type="text" id="lp-link" placeholder="구매 링크 입력 (선택)" style="width:100%;border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;box-sizing:border-box">
+      <div style="font-size:11px;color:var(--text3);margin-top:4px">쿠팡, 네이버, 11번가 등 구매하신 링크를 붙여넣으세요</div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:center">
+      <button class="btn btn-ghost btn-sm" onclick="closeLowestPricePopup()">나중에</button>
+      <button class="btn btn-primary" onclick="shareLowestPrice()"><i class="ti ti-share"></i> 공유하기</button>
     </div>
   </div>
 </div>
@@ -1094,6 +1113,11 @@ function clearDateRange(){
 
 async function loadEntries(){
   showLoading(true);
+  // 소모품 목록 캐시 (없으면 로드)
+  if(!window._cachedSupplies){
+    const{data:supData}=await sb.from('supplies').select('*').eq('branch',curBranch);
+    window._cachedSupplies=supData||[];
+  }
   const{from,to}=getGridPeriod();
   const type=document.getElementById('f-type')?.value||'';
   let q=sb.from('entries').select('*').eq('branch',curBranch);
@@ -1235,18 +1259,18 @@ function renderGrid(data){
     inAmt.addEventListener('change',()=>gridSaveAmt(e.id,inAmt));
     tdAmt.appendChild(inAmt);tr.appendChild(tdAmt);
 
+    // 적요
+    const tdMemo=document.createElement('td');tdMemo.style.cssText='padding:3px 2px';
+    const inMemo=document.createElement('input');inMemo.type='text';inMemo.value=e.memo||'';inMemo.placeholder='적요';inMemo.className='grid-cell';
+    inMemo.addEventListener('change',()=>gridSaveCell(e.id,'memo',inMemo.value));
+    tdMemo.appendChild(inMemo);tr.appendChild(tdMemo);
+
     // 수량
     const tdQty=document.createElement('td');tdQty.style.cssText='padding:3px 2px;text-align:center';
     const inQty=document.createElement('input');inQty.type='number';inQty.value=e.qty||1;inQty.min=1;
     inQty.className='grid-cell';inQty.style.cssText='text-align:center;width:38px';
     inQty.addEventListener('change',()=>gridSaveCell(e.id,'qty',parseInt(inQty.value)||1));
     tdQty.appendChild(inQty);tr.appendChild(tdQty);
-
-    // 적요
-    const tdMemo=document.createElement('td');tdMemo.style.cssText='padding:3px 2px';
-    const inMemo=document.createElement('input');inMemo.type='text';inMemo.value=e.memo||'';inMemo.placeholder='적요';inMemo.className='grid-cell';
-    inMemo.addEventListener('change',()=>gridSaveCell(e.id,'memo',inMemo.value));
-    tdMemo.appendChild(inMemo);tr.appendChild(tdMemo);
 
     // 영수증: 표 안에서는 미리보기 없이 첨부 여부만 표시
     const tdRcp=document.createElement('td');tdRcp.style.cssText='padding:3px 4px;text-align:center;white-space:nowrap';
@@ -1295,8 +1319,13 @@ function renderGrid(data){
     <td style="padding:3px 2px" id="nr-sub-cell"><span style="font-size:11px;color:var(--text3)">-</span></td>
     <td style="padding:3px 2px"><div class="vendor-wrap"><input type="text" id="nr-vendor" placeholder="코드 또는 거래처명" class="grid-cell" oninput="filterVendorDrop('nr-vendor','nr-vendor-dd')" onblur="setTimeout(()=>hideVendorDrop('nr-vendor-dd'),150)" autocomplete="off"><div id="nr-vendor-dd" class="vendor-dropdown"></div></div></td>
     <td style="padding:3px 4px"><input type="text" id="nr-amt" placeholder="0" oninput="formatAmt(this)" inputmode="numeric" class="grid-cell" style="text-align:right;min-width:70px"></td>
-    <td style="padding:3px 2px;text-align:center"><input type="number" id="nr-qty" value="1" min="1" class="grid-cell" style="text-align:center;width:38px"></td>
-    <td style="padding:3px 2px"><input type="text" id="nr-memo" placeholder="적요 입력 후 Enter" class="grid-cell" onkeydown="if(event.key==='Enter')saveNewRow()"></td>
+    <td style="padding:3px 2px"><input type="text" id="nr-memo" placeholder="적요 입력" class="grid-cell" oninput="onNrMemoInput(this)"></td>
+    <td style="padding:3px 2px;text-align:center">
+      <div style="display:flex;align-items:center;justify-content:center;gap:2px">
+        <input type="number" id="nr-qty" value="1" min="1" class="grid-cell" style="text-align:center;width:38px" onkeydown="if(event.key==='Enter')saveNewRow()">
+        <span id="nr-qty-unit" style="font-size:13px;font-weight:700;color:transparent;white-space:nowrap;min-width:24px;display:inline-block">　</span>
+      </div>
+    </td>
     <td style="padding:3px 4px;text-align:center"><span style="font-size:11px;color:var(--text3)">-</span></td>
     <td style="padding:3px 4px;text-align:center"><button onclick="saveNewRow()" style="background:var(--c-primary);color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:11px;padding:4px 10px;white-space:nowrap">저장</button></td>`;
   tbody.appendChild(emptyTr);
@@ -1395,13 +1424,28 @@ function addGridRow(){
   document.getElementById('ledger-empty').style.display='none';
 }
 
+
+function onNrMemoInput(input){
+  const memo = input.value.trim();
+  const unitEl = document.getElementById('nr-qty-unit');
+  if(!unitEl) return;
+  if(!memo){ unitEl.textContent=''; return; }
+  const matched = (window._cachedSupplies||[]).find(s=>memo.includes(s.name)||s.name.includes(memo));
+  if(matched && matched.unit){
+    unitEl.textContent = '/' + matched.unit;
+    unitEl.style.color = 'var(--c-primary)';
+  } else {
+    unitEl.textContent = '　';
+    unitEl.style.color = 'transparent';
+  }
+}
 function updateNrSub(){
   const code=document.getElementById('nr-acct')?.value;
   const subCell=document.getElementById('nr-sub-cell');
   if(!subCell) return;
   if(code==='830'){
     const subOpts=SUB_ACCOUNTS['830'].map(s=>`<option value="${s.code}">${s.name}</option>`).join('');
-    subCell.innerHTML=`<select id="nr-sub" class="grid-cell"><option value="">-</option>${subOpts}</select>`;
+    subCell.innerHTML=`<select id="nr-sub" class="grid-cell" style="min-width:90px"><option value="">소분류</option>${subOpts}</select>`;
   } else {
     subCell.innerHTML=`<span style="font-size:11px;color:var(--text3)">-</span>`;
   }
@@ -1419,12 +1463,20 @@ async function saveNewRow(){
   const subSel=document.getElementById('nr-sub');
   const sub_code=code==='830'&&subSel?subSel.value:'';
   const sub_acct=code==='830'&&subSel?SUB_ACCOUNTS['830'].find(s=>s.code===subSel.value)?.name||'':'';
-  const payload={branch:curBranch,date,kind,code,acct,sub_code,sub_acct,vendor:document.getElementById('nr-vendor')?.value.trim()||null,memo:document.getElementById('nr-memo')?.value.trim()||null,amt,qty:parseInt(document.getElementById('nr-qty')?.value)||1,payment_method:document.getElementById('nr-pm')?.value||null};
+  const memoInput=document.getElementById('nr-memo')?.value.trim()||null;
+  const payload={branch:curBranch,date,kind,code,acct,sub_code,sub_acct,vendor:document.getElementById('nr-vendor')?.value.trim()||null,memo:memoInput,amt,qty:parseInt(document.getElementById('nr-qty')?.value)||1,payment_method:document.getElementById('nr-pm')?.value||null};
   showLoading(true);
   const{error}=await sb.from('entries').insert(payload);
   showLoading(false);
   if(error){toast('저장 오류: '+error.message);return;}
-  toast('저장되었습니다');
+  // 소모품 최저가 체크 — 적요에서 소모품 목록 품목명 매칭
+  if(code==='830'&&memoInput){
+    // 전분원 supplies에서 품목명 키워드 로드
+    const{data:allSupplies}=await sb.from('supplies').select('name,unit,pack_qty');
+    const uniqueItems=[...new Map((allSupplies||[]).map(s=>[s.name,s])).values()];
+    const matched=uniqueItems.find(s=>memoInput.includes(s.name)||s.name.includes(memoInput));
+    if(matched) await checkLowestPrice(matched.name, matched.unit||'개', matched.pack_qty||1, amt, parseInt(document.getElementById('nr-qty')?.value)||1);
+  }
   loadEntries();
 }
 
@@ -2106,6 +2158,11 @@ function toggleForm(){
 }
 async function loadEntries(){
   showLoading(true);
+  // 소모품 목록 캐시 (없으면 로드)
+  if(!window._cachedSupplies){
+    const{data:supData}=await sb.from('supplies').select('*').eq('branch',curBranch);
+    window._cachedSupplies=supData||[];
+  }
 
   // PC 거래내역 조회는 상단의 연도/월/일 또는 기간설정 값을 기준으로 조회
   const {from,to}=getGridPeriod();
@@ -2526,8 +2583,10 @@ function showSupplyTab(tab,el){
   el.classList.add('active');
   document.getElementById('supply-tab-cycle').style.display=tab==='cycle'?'block':'none';
   document.getElementById('supply-tab-items').style.display=tab==='items'?'block':'none';
+  document.getElementById('supply-tab-lowest').style.display=tab==='lowest'?'block':'none';
   if(tab==='cycle') loadSupplyCycle();
   if(tab==='items') loadSupplyItems();
+  if(tab==='lowest') loadLowestPrices();
 }
 async function loadSupplies(){loadSupplyCycle()}
 async function loadSupplyCycle(){
@@ -2611,6 +2670,98 @@ function toggleSupplyHist(id){
   if(icon) icon.style.transform=open?'rotate(180deg)':'rotate(0deg)';
 }
 
+
+async function loadLowestPrices(){
+  const el=document.getElementById('lowest-price-list');
+  if(!el) return;
+  el.innerHTML='<div style="padding:1rem;color:var(--text3)">불러오는 중...</div>';
+
+  const{data,error}=await sb.from('lowest_prices').select('*').order('recorded_at',{ascending:false});
+  if(error){
+    if(error.message.includes('does not exist')||error.message.includes('relation')){
+      el.innerHTML=`<div class="card"><p style="color:var(--text3);font-size:13px">Supabase SQL Editor에서 아래 SQL을 실행해주세요:</p>
+        <pre style="background:#F0F4FA;padding:10px;border-radius:6px;font-size:11px">CREATE TABLE IF NOT EXISTS lowest_prices (
+  id serial primary key,
+  branch text,
+  supply_name text,
+  unit text,
+  unit_price integer,
+  purchase_link text,
+  recorded_at timestamptz,
+  UNIQUE(branch, supply_name)
+);</pre></div>`;
+    } else {
+      el.innerHTML=`<div class="empty">오류: ${error.message}</div>`;
+    }
+    return;
+  }
+
+  if(!data||!data.length){
+    el.innerHTML='<div class="card"><div class="empty" style="padding:2rem">아직 공유된 최저가 정보가 없습니다.<br><span style="font-size:12px;color:var(--text3)">소모품 구매 후 최저가 달성 시 공유해주세요!</span></div></div>';
+    return;
+  }
+
+  // 품목별로 그룹핑
+  const grouped={};
+  data.forEach(d=>{
+    if(!grouped[d.supply_name]) grouped[d.supply_name]=[];
+    grouped[d.supply_name].push(d);
+  });
+
+  const BRANCH_LABELS={'남동탄 분원':'남동탄','수원 분원':'수원','장안 분원':'장안','서수원 분원':'서수원','운정 1분원':'운정1','운정 2분원':'운정2','테스트JLS':'테스트','본사':'본사'};
+
+  el.innerHTML=`<div style="padding:4px 0">
+    <div style="font-size:13px;font-weight:700;margin-bottom:14px;color:var(--text)">품목별 최저가 현황 <span style="font-size:11px;font-weight:400;color:var(--text3)">분원간 공유된 최저가 정보</span></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px">
+    ${Object.entries(grouped).map(([name,items])=>{
+      const sorted=items.slice().sort((a,b)=>a.unit_price-b.unit_price);
+      const best=sorted[0];
+      const cards=sorted.map(d=>{
+        const isBest=d.unit_price===best.unit_price;
+        const brLabel=BRANCH_LABELS[d.branch]||d.branch;
+        const date=d.recorded_at?d.recorded_at.split('T')[0]:'';
+        const linkBtn=d.purchase_link
+          ?`<span style="display:inline-flex;align-items:center;gap:8px">
+              <a href="${d.purchase_link}" target="_blank" style="font-size:16px;color:var(--c-primary);text-decoration:none"><i class="ti ti-external-link"></i></a>
+              ${d.branch===curBranch?`<button onclick="editLowestLink(${d.id},'${d.purchase_link||''}')" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:16px;padding:0"><i class="ti ti-edit"></i></button>`:''}`
+          :(d.branch===curBranch
+            ?`<button onclick="editLowestLink(${d.id},'')" style="background:none;border:none;cursor:pointer;color:var(--c-primary);font-size:14px;padding:0"><i class="ti ti-link"></i> 링크 추가</button>`
+            :`<span style="font-size:12px;color:var(--text3)">-</span>`);
+        // 총금액 역산: unit_price * pack_qty * qty (pack_qty 없으면 unit_price 그대로)
+        return `<div style="padding:10px 0;border-bottom:1px solid var(--border)">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+            <div style="display:flex;align-items:center;gap:6px">
+              <span style="font-size:14px">${isBest?'🥇':'　'}</span>
+              <div>
+                <div style="font-size:13px;font-weight:${isBest?700:500};color:${isBest?'var(--text)':'var(--text2)'}">${brLabel}</div>
+                <div style="font-size:11px;color:var(--text3)">${date}</div>
+              </div>
+            </div>
+            <div style="text-align:right">
+              ${d.total_amt?`<div style="font-size:15px;font-weight:800;color:${isBest?'var(--c-income)':'var(--text2)'};margin-bottom:2px">${Number(d.total_amt).toLocaleString()}원</div>`:''}
+              <div style="font-size:11px;color:var(--text3);margin-bottom:2px">${d.unit_price.toLocaleString()}원/${d.unit||'개'}</div>
+            </div>
+          </div>
+          <div style="padding-left:24px;margin-top:4px">${linkBtn}</div>
+        </div>`;
+      }).join('');
+      return `<div class="card" style="padding:14px">
+        <div style="font-size:16px;font-weight:800;color:var(--c-primary);margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid var(--c-primary)">${name}</div>
+        ${cards}
+      </div>`;
+    }).join('')}
+    </div>
+  </div>`;
+}
+
+async function editLowestLink(id, currentLink){
+  const link=prompt('구매 링크를 입력하세요:', currentLink||'');
+  if(link===null) return;
+  const{error}=await sb.from('lowest_prices').update({purchase_link:link||null}).eq('id',id);
+  if(error){toast('저장 오류: '+error.message);return;}
+  toast('링크가 저장되었습니다');
+  loadLowestPrices();
+}
 async function loadSupplyItems(){
   const{data:supplies}=await sb.from('supplies').select('*').eq('branch',curBranch).order('created_at');
   const el=document.getElementById('supply-items-list');
@@ -4139,6 +4290,130 @@ loadSupplies = async function(){
   else await _origLoadSupplies();
 };
 
+
+
+/* ===================================================
+   소모품 최저가 비교 & 팝업
+=================================================== */
+let _lowestPriceData = null; // 팝업에 전달할 데이터
+
+function onSupplyItemSelect(sel){
+  // 품목 선택 시 단위 정보 표시 (qty 옆에)
+  const opt = sel.options[sel.selectedIndex];
+  const unit = opt.dataset.unit||'';
+  const pack = parseInt(opt.dataset.pack)||1;
+  const qtyEl = document.getElementById('nr-qty');
+  // 기존 단위 안내 제거 후 재생성
+  let infoEl = document.getElementById('nr-supply-unit-info');
+  if(!infoEl){
+    infoEl = document.createElement('span');
+    infoEl.id = 'nr-supply-unit-info';
+    infoEl.style.cssText = 'font-size:10px;color:var(--text3);margin-left:4px';
+    qtyEl?.parentNode?.appendChild(infoEl);
+  }
+  infoEl.textContent = pack>1 ? `1박스=${pack}${unit}` : unit ? `단위:${unit}` : '';
+}
+
+async function checkLowestPrice(supplyName, unit, packQty, totalAmt, qty){
+  // 단위당 가격 = 총금액 / (구매수량 * 1묶음당 낱개수)
+  const myUnitPrice = Math.round(totalAmt / (qty * packQty));
+
+  // 전분원 최근 2주 같은 품목 구매이력 조회
+  const twoWeeksAgo = new Date();
+  twoWeeksAgo.setDate(twoWeeksAgo.getDate()-14);
+  const fromDate = twoWeeksAgo.toISOString().split('T')[0];
+
+  const{data:others} = await sb.from('entries')
+    .select('branch,amt,qty,memo,vendor')
+    .eq('code','830')
+    .or(`memo.ilike.%${supplyName}%,sub_acct.ilike.%${supplyName}%,vendor.ilike.%${supplyName}%`)
+    .gte('date', fromDate)
+    .neq('branch', curBranch);
+
+  if(!others||!others.length){
+    // 비교 대상 없음 → 그냥 통과 (최저가 여부 모름)
+    return;
+  }
+
+  // 타분원 단위당 최저가
+  const otherUnitPrices = others.map(e=>{
+    const q = e.qty||1;
+    return Math.round(_num(e.amt) / (q * packQty));
+  }).filter(p=>p>0);
+
+  if(!otherUnitPrices.length) return;
+
+  const otherMin = Math.min(...otherUnitPrices);
+
+  if(myUnitPrice <= otherMin){
+    // 최저가!
+    _lowestPriceData = {
+      supplyName, unit, myUnitPrice, otherMin, totalAmt,
+      savedPer: otherMin - myUnitPrice
+    };
+    openLowestPricePopup();
+  }
+  // 최저가 아니면 아무것도 안 띄움
+}
+
+function openLowestPricePopup(){
+  const d = _lowestPriceData;
+  if(!d) return;
+  const saved = d.savedPer > 0 ? ` (${d.unit}당 ${d.savedPer.toLocaleString()}원 절약!)` : '';
+  document.getElementById('lp-title').innerHTML =
+    `🎉 ${d.supplyName} 최저가로 구매하셨네요!`;
+  document.getElementById('lp-desc').innerHTML =
+    `<b>${d.unit}당 ${d.myUnitPrice.toLocaleString()}원</b>${saved}<br>
+     다른 분원들도 이 가격에 살 수 있도록 구매 링크를 공유해주세요.`;
+  document.getElementById('lp-link').value = '';
+  document.getElementById('lp-overlay').style.display = 'flex';
+}
+
+async function closeLowestPricePopup(){
+  // 나중에 눌러도 링크 없이 저장
+  if(_lowestPriceData){
+    await sb.from('lowest_prices').upsert({
+      branch: curBranch,
+      supply_name: _lowestPriceData.supplyName,
+      unit: _lowestPriceData.unit,
+      unit_price: _lowestPriceData.myUnitPrice,
+      total_amt: _lowestPriceData.totalAmt,
+      purchase_link: null,
+      recorded_at: new Date().toISOString()
+    }, {onConflict:'branch,supply_name'});
+  }
+  document.getElementById('lp-overlay').style.display = 'none';
+  _lowestPriceData = null;
+}
+
+async function shareLowestPrice(){
+  const link = document.getElementById('lp-link').value.trim();
+  const d = _lowestPriceData;
+  if(!d){closeLowestPricePopup();return;}
+
+  // lowest_prices 테이블에 저장
+  const{error} = await sb.from('lowest_prices').upsert({
+    branch: curBranch,
+    supply_name: d.supplyName,
+    unit: d.unit,
+    unit_price: d.myUnitPrice,
+    total_amt: d.totalAmt,
+    purchase_link: link||null,
+    recorded_at: new Date().toISOString()
+  }, {onConflict:'branch,supply_name'});
+
+  if(error){
+    // 테이블 없으면 안내
+    if(error.message.includes('does not exist')||error.message.includes('relation')){
+      alert('Supabase에서 아래 SQL을 실행해주세요:\n\nCREATE TABLE IF NOT EXISTS lowest_prices (\n  id serial primary key,\n  branch text,\n  supply_name text,\n  unit text,\n  unit_price integer,\n  purchase_link text,\n  recorded_at timestamptz,\n  UNIQUE(branch, supply_name)\n);');
+    } else {
+      toast('공유 오류: '+error.message);
+    }
+    return;
+  }
+  toast('최저가 공유 완료! 다른 분원들에게 도움이 될 거예요 😊');
+  closeLowestPricePopup();
+}
 
 /* ===== 계정과목 가이드 ===== */
 const ACCT_GUIDE = {
